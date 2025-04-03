@@ -180,8 +180,7 @@
 <a href="#179" id="179">179</a>
 <a href="#180" id="180">180</a>
 <a href="#181" id="181">181</a>
-<a href="#182" id="182">182</a>
-<a href="#183" id="183">183</a></pre></div><pre class="rust"><code><span class="doccomment">//! (main.rs)
+<a href="#182" id="182">182</a></pre></div><pre class="rust"><code><span class="doccomment">//! (main.rs)
 //! ```rust
 //! fn main() -&gt; ! {
 //!  jsompiler::run()
@@ -193,7 +192,8 @@
 <span class="kw">pub mod </span>utility;
 <span class="kw">use </span>utility::{error_exit, format_err};
 <span class="kw">pub type </span>JResult = <span class="prelude-ty">Result</span>&lt;Json, Box&lt;<span class="kw">dyn </span>Error&gt;&gt;;
-<span class="kw">pub type </span>JFunc&lt;T&gt; = <span class="kw">fn</span>(<span class="kw-2">&amp;mut </span>T, <span class="kw-2">&amp;</span>[Json], <span class="kw-2">&amp;mut </span>String) -&gt; JResult;
+<span class="kw">pub type </span>JFunc&lt;T&gt; = <span class="kw">fn</span>(<span class="kw-2">&amp;mut </span>T, <span class="kw-2">&amp;</span>[Json], <span class="kw-2">&amp;mut </span>String) -&gt; <span class="prelude-ty">Result</span>&lt;JValue, Box&lt;<span class="kw">dyn </span>Error&gt;&gt;;
+<span class="kw">pub type </span>JFuncResult = <span class="prelude-ty">Result</span>&lt;JValue, Box&lt;<span class="kw">dyn </span>Error&gt;&gt;;
 <span class="kw">use </span>std::{collections::HashMap, env, error::Error, fmt, fs, path::Path, process::Command};
 <span class="doccomment">/// Runs the Jsompiler, compiling and executing a JSON-based program.
 ///
@@ -356,12 +356,10 @@
 }
 <span class="attr">#[derive(Debug)]
 </span><span class="kw">pub struct </span>JError(<span class="kw">pub </span>String);
-
 <span class="kw">impl </span>fmt::Display <span class="kw">for </span>JError {
   <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter) -&gt; fmt::Result {
     <span class="macro">write!</span>(f, <span class="string">"{}"</span>, <span class="self">self</span>.<span class="number">0</span>)
   }
 }
-
 <span class="kw">impl </span>Error <span class="kw">for </span>JError {}
 </code></pre></div></section></main></body></html>

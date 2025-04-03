@@ -412,7 +412,7 @@
   ///
   /// # Errors
   ///
-  /// `JError(String)` - Returns a `JError` structure containing an error message if an invalid syntax is passed.
+  /// `JError` - Returns a `JError` structure containing an error message if an invalid syntax is passed.
   </span><span class="kw">pub fn </span>parse(<span class="kw-2">&amp;mut </span><span class="self">self</span>, code: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>str) -&gt; JResult {
     <span class="self">self</span>.input_code = code;
     <span class="self">self</span>.pos = <span class="number">0</span>;

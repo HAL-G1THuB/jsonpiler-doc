@@ -496,33 +496,8 @@
 <a href="#495" id="495">495</a>
 <a href="#496" id="496">496</a>
 <a href="#497" id="497">497</a>
-<a href="#498" id="498">498</a>
-<a href="#499" id="499">499</a>
-<a href="#500" id="500">500</a>
-<a href="#501" id="501">501</a>
-<a href="#502" id="502">502</a>
-<a href="#503" id="503">503</a>
-<a href="#504" id="504">504</a>
-<a href="#505" id="505">505</a>
-<a href="#506" id="506">506</a>
-<a href="#507" id="507">507</a>
-<a href="#508" id="508">508</a>
-<a href="#509" id="509">509</a>
-<a href="#510" id="510">510</a>
-<a href="#511" id="511">511</a>
-<a href="#512" id="512">512</a>
-<a href="#513" id="513">513</a>
-<a href="#514" id="514">514</a>
-<a href="#515" id="515">515</a>
-<a href="#516" id="516">516</a>
-<a href="#517" id="517">517</a>
-<a href="#518" id="518">518</a>
-<a href="#519" id="519">519</a>
-<a href="#520" id="520">520</a>
-<a href="#521" id="521">521</a>
-<a href="#522" id="522">522</a>
-<a href="#523" id="523">523</a></pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::utility::dummy;
-<span class="kw">use super</span>::{JFunc, JResult, JValue, Jsompiler, Json, utility::obj_json};
+<a href="#498" id="498">498</a></pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::utility::dummy;
+<span class="kw">use super</span>::{JFunc, JFuncResult, JResult, JValue, Jsompiler, Json, utility::obj_json};
 <span class="kw">use </span>std::fmt::Write <span class="kw">as _</span>;
 <span class="kw">use </span>std::fs::File;
 <span class="kw">use </span>std::io::{<span class="self">self</span>, BufWriter, Write <span class="kw">as _</span>};
@@ -605,7 +580,6 @@
     writer.write_all(<span class="self">self</span>.data.as_bytes())<span class="question-mark">?</span>;
     writer.write_all(
       <span class="string">br".bss
-  .lcomm EMSG, 512
   .lcomm STDO, 8
   .lcomm STDE, 8
   .lcomm STDI, 8
@@ -647,28 +621,30 @@ _start:
     writer.write_all(
       <span class="string">br"  xor ecx, ecx
   call ExitProcess
-  display_error:
+display_error:
   call GetLastError
   mov rbx, rax
   sub rsp, 32
-  mov ecx, 0x1200
+  mov ecx, 0x1300
   xor edx, edx
   mov r8, rbx
   xor r9d, r9d
-  lea rax, QWORD PTR EMSG[rip]
-  mov 32[rsp], rax
-  mov QWORD PTR 40[rsp], 512
+  lea rax, QWORD PTR 32[rsp]
+  mov QWORD PTR 32[rsp], rax
+  mov QWORD PTR 40[rsp], 0
   mov QWORD PTR 48[rsp], 0
   call FormatMessageW
-  add rsp, 32
   test rax, rax
   jz exit_program
   xor ecx, ecx
-  lea rdx, QWORD PTR EMSG[rip]
+  mov rdx, QWORD PTR 32[rsp]
   xor r8d, r8d
   mov r9, 0x10
   call MessageBoxW
-  exit_program:
+exit_program:
+  mov rcx, QWORD PTR 32[rsp]
+  call LocalFree
+  add rsp, 32
   mov rcx, rbx
   call ExitProcess
 "</span>,
@@ -692,11 +668,11 @@ _start:
   /// # Returns
   ///
   /// * `Ok(Json)` - The result of the evaluation.
-  /// * `Err(JError(String))` - If an error occurred during the compilation process.
+  /// * `Err(JError)` - If an error occurred during the compilation process.
   ///
   /// # Errors
   ///
-  /// * `JError(String)` - If an error occurred during the compilation process.
+  /// * `JError` - If an error occurred during the compilation process.
   </span><span class="kw">pub fn </span>build(<span class="kw-2">&amp;mut </span><span class="self">self</span>, parsed: <span class="kw-2">&amp;</span>Json, json_file: <span class="kw-2">&amp;</span>str, filename: <span class="kw-2">&amp;</span>str) -&gt; JResult {
     <span class="self">self</span>.seed = <span class="number">0</span>;
     <span class="self">self</span>.entry(<span class="string">"="</span>, Jsompiler::set_local);
@@ -743,7 +719,7 @@ _start:
           <span class="kw">return </span>result;
         }
         <span class="kw">if let </span><span class="prelude-val">Some</span>(func) = <span class="self">self</span>.f_table.get(cmd.as_str()) {
-          func(<span class="self">self</span>, <span class="kw-2">&amp;</span>list[<span class="number">1</span>..], function)
+          <span class="prelude-val">Ok</span>(obj_json(func(<span class="self">self</span>, <span class="kw-2">&amp;</span>list[<span class="number">1</span>..], function)<span class="question-mark">?</span>, <span class="kw-2">&amp;</span>list[<span class="number">0</span>]))
         } <span class="kw">else </span>{
           <span class="self">self</span>.obj_err(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"Function {cmd} is undefined"</span>), <span class="kw-2">&amp;</span>list[<span class="number">0</span>])
         }
@@ -767,19 +743,6 @@ _start:
     }
   }
   <span class="doccomment">/// Evaluates a lambda function definition.
-  ///
-  /// This function handles the definition of lambda functions, including parsing the parameter
-  /// list and generating the assembly code for the function body.
-  ///
-  /// # Arguments
-  ///
-  /// * `func_list` - The list of JSON objects representing the lambda function.
-  /// * `function` - A mutable string to accumulate the assembly code.
-  ///
-  /// # Returns
-  ///
-  /// * `Ok(Json)` - A `Json` object representing the defined lambda function.
-  /// * `Err(JError)` - If an error occurred during the lambda function definition.
   </span><span class="kw">fn </span>eval_lambda(<span class="kw-2">&amp;mut </span><span class="self">self</span>, func_list: <span class="kw-2">&amp;</span>[Json], function: <span class="kw-2">&amp;mut </span>String) -&gt; JResult {
     <span class="kw">if </span>!<span class="macro">matches!</span>(func_list[<span class="number">0</span>].value, JValue::String(<span class="kw-2">ref </span>s) <span class="kw">if </span>s == <span class="string">"lambda"</span>) {
       <span class="kw">return </span><span class="self">self</span>.obj_err(
@@ -830,9 +793,9 @@ _start:
   ///
   /// # Returns
   ///
-  /// * `Ok(Json)` - The result of the last expression in the block.
+  /// * `Ok(JValue)` - The result of the last expression in the block.
   /// * `Err(JError)` - If an error occurred during the evaluation.
-  </span><span class="kw">fn </span>begin(<span class="kw-2">&amp;mut </span><span class="self">self</span>, args: <span class="kw-2">&amp;</span>[Json], function: <span class="kw-2">&amp;mut </span>String) -&gt; JResult {
+  </span><span class="kw">fn </span>begin(<span class="kw-2">&amp;mut </span><span class="self">self</span>, args: <span class="kw-2">&amp;</span>[Json], function: <span class="kw-2">&amp;mut </span>String) -&gt; JFuncResult {
     <span class="self">self</span>.assert(
       !args.is_empty(),
       <span class="string">"'begin' requires at least one arguments"</span>,
@@ -842,7 +805,7 @@ _start:
     <span class="kw">for </span>a <span class="kw">in </span>args {
       result = <span class="self">self</span>.eval(a, function)<span class="question-mark">?</span>;
     }
-    <span class="prelude-val">Ok</span>(result)
+    <span class="prelude-val">Ok</span>(result.value)
   }
   <span class="doccomment">/// Sets a local variable.
   ///
@@ -855,29 +818,26 @@ _start:
   ///
   /// # Returns
   ///
-  /// * `Ok(Json)` - The result of the assignment.
+  /// * `Ok(JValue)` - The result of the assignment.
   /// * `Err(JError)` - If an error occurred during the assignment.
-  </span><span class="kw">fn </span>set_local(<span class="kw-2">&amp;mut </span><span class="self">self</span>, args: <span class="kw-2">&amp;</span>[Json], function: <span class="kw-2">&amp;mut </span>String) -&gt; JResult {
+  </span><span class="kw">fn </span>set_local(<span class="kw-2">&amp;mut </span><span class="self">self</span>, args: <span class="kw-2">&amp;</span>[Json], function: <span class="kw-2">&amp;mut </span>String) -&gt; JFuncResult {
     <span class="self">self</span>.assert(args.len() == <span class="number">2</span>, <span class="string">"'=' requires two arguments"</span>, <span class="kw-2">&amp;</span>args[<span class="number">0</span>])<span class="question-mark">?</span>;
     <span class="kw">let </span>JValue::String(var_name) = <span class="kw-2">&amp;</span>args[<span class="number">0</span>].value <span class="kw">else </span>{
-      <span class="kw">return </span><span class="self">self</span>.obj_err(
-        <span class="string">"Variable name requires compile-time fixed strings"</span>,
-        <span class="kw-2">&amp;</span>args[<span class="number">1</span>],
-      );
+      <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="string">"Variable name requires compile-time fixed strings"</span>.into());
     };
     <span class="kw">let </span>result = <span class="self">self</span>.eval(<span class="kw-2">&amp;</span>args[<span class="number">1</span>], function)<span class="question-mark">?</span>;
     <span class="kw">let </span>n = <span class="self">self</span>.get_name();
     <span class="kw">match </span><span class="kw-2">&amp;</span>result.value {
       JValue::String(s) =&gt; {
         <span class="macro">writeln!</span>(<span class="self">self</span>.data, <span class="string">"  {n}: .string \"{s}\""</span>)<span class="question-mark">?</span>;
-        <span class="self">self</span>.vars.insert(var_name.clone(), JValue::StringVar(n));
-        <span class="prelude-val">Ok</span>(result)
+        <span class="self">self</span>.vars.insert(var_name.clone(), JValue::StringVar(n.clone()));
+        <span class="prelude-val">Ok</span>(JValue::StringVar(n))
       }
       JValue::StringVar(s) =&gt; {
         <span class="self">self</span>.vars.insert(var_name.clone(), JValue::StringVar(s.clone()));
-        <span class="prelude-val">Ok</span>(result)
+        <span class="prelude-val">Ok</span>(result.value)
       }
-      <span class="kw">_ </span>=&gt; <span class="self">self</span>.obj_err(<span class="string">"Assignment to an unimplemented type"</span>, <span class="kw-2">&amp;</span>args[<span class="number">2</span>]),
+      <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(<span class="string">"Assignment to an unimplemented type"</span>.into()),
     }
   }
   <span class="doccomment">/// Gets the value of a local variable.
@@ -891,16 +851,16 @@ _start:
   ///
   /// # Returns
   ///
-  /// * `Ok(Json)` - A `Json` object representing the value of the variable.
+  /// * `Ok(JValue)` - A `Json` object representing the value of the variable.
   /// * `Err(JError)` - If the variable is undefined.
-  </span><span class="kw">fn </span>get_local(<span class="kw-2">&amp;mut </span><span class="self">self</span>, args: <span class="kw-2">&amp;</span>[Json], <span class="kw">_</span>: <span class="kw-2">&amp;mut </span>String) -&gt; JResult {
+  </span><span class="kw">fn </span>get_local(<span class="kw-2">&amp;mut </span><span class="self">self</span>, args: <span class="kw-2">&amp;</span>[Json], <span class="kw">_</span>: <span class="kw-2">&amp;mut </span>String) -&gt; JFuncResult {
     <span class="self">self</span>.assert(args.len() == <span class="number">1</span>, <span class="string">"'$' requires one argument"</span>, <span class="kw-2">&amp;</span>args[<span class="number">0</span>])<span class="question-mark">?</span>;
     <span class="kw">let </span>JValue::String(var_name) = <span class="kw-2">&amp;</span>args[<span class="number">0</span>].value <span class="kw">else </span>{
-      <span class="kw">return </span><span class="self">self</span>.obj_err(<span class="string">"Variable name requires compile-time fixed string"</span>, <span class="kw-2">&amp;</span>args[<span class="number">1</span>]);
+      <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="string">"Variable name requires compile-time fixed string"</span>.into());
     };
     <span class="self">self</span>.vars.get(var_name).map_or_else(
-      || <span class="self">self</span>.obj_err(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"Undefined variables: '{var_name}'"</span>), <span class="kw-2">&amp;</span>args[<span class="number">1</span>]),
-      |value| <span class="prelude-val">Ok</span>(obj_json(value.clone(), <span class="kw-2">&amp;</span>args[<span class="number">0</span>])),
+      || <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">"Undefined variables: '{var_name}'"</span>).into()),
+      |value| <span class="prelude-val">Ok</span>(value.clone()),
     )
   }
   <span class="doccomment">/// Performs addition.
@@ -914,9 +874,9 @@ _start:
   ///
   /// # Returns
   ///
-  /// * `Ok(Json)` - A `Json` object representing the sum.
+  /// * `Ok(JValue)` - A `Json` object representing the sum.
   /// * `Err(JError)` - If an error occurred during the addition.
-  </span><span class="kw">fn </span>plus(<span class="kw-2">&amp;mut </span><span class="self">self</span>, args: <span class="kw-2">&amp;</span>[Json], function: <span class="kw-2">&amp;mut </span>String) -&gt; JResult {
+  </span><span class="kw">fn </span>plus(<span class="kw-2">&amp;mut </span><span class="self">self</span>, args: <span class="kw-2">&amp;</span>[Json], function: <span class="kw-2">&amp;mut </span>String) -&gt; JFuncResult {
     <span class="self">self</span>.assert(
       !args.is_empty(),
       <span class="string">"'+' requires at least one arguments"</span>,
@@ -925,25 +885,19 @@ _start:
     <span class="kw">match </span><span class="self">self</span>.eval(<span class="kw-2">&amp;</span>args[<span class="number">0</span>], function)<span class="question-mark">?</span>.value {
       JValue::Int(l) =&gt; <span class="macro">writeln!</span>(function, <span class="string">"  mov rax, {l}"</span>)<span class="question-mark">?</span>,
       JValue::IntVar(v) =&gt; <span class="macro">writeln!</span>(function, <span class="string">"  mov rax, QWORD PTR {v}[rip]"</span>)<span class="question-mark">?</span>,
-      <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="self">self</span>.obj_err(<span class="string">"'+' requires integer operands"</span>, <span class="kw-2">&amp;</span>args[<span class="number">0</span>]),
+      <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="string">"'+' requires integer operands"</span>.into()),
     }
     <span class="kw">for </span>a <span class="kw">in </span><span class="kw-2">&amp;</span>args[<span class="number">1</span>..args.len()] {
       <span class="kw">match </span><span class="self">self</span>.eval(a, function)<span class="question-mark">?</span>.value {
         JValue::Int(l) =&gt; <span class="macro">writeln!</span>(function, <span class="string">"  add rax, {l}"</span>)<span class="question-mark">?</span>,
         JValue::IntVar(v) =&gt; <span class="macro">writeln!</span>(function, <span class="string">"  add rax, QWORD PTR {v}[rip]"</span>)<span class="question-mark">?</span>,
-        <span class="kw">_ </span>=&gt; {
-          <span class="kw">return </span><span class="self">self</span>.obj_err(<span class="string">"'+' requires integer operands"</span>, <span class="kw-2">&amp;</span>args[<span class="number">0</span>]);
-        }
+        <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="string">"'+' requires integer operands"</span>.into()),
       };
     }
     <span class="kw">let </span>ret = <span class="self">self</span>.get_name();
     <span class="macro">writeln!</span>(<span class="self">self</span>.bss, <span class="string">"  .lcomm {ret}, 8"</span>)<span class="question-mark">?</span>;
     <span class="macro">writeln!</span>(function, <span class="string">"  mov QWORD PTR {ret}[rip], rax"</span>)<span class="question-mark">?</span>;
-    <span class="prelude-val">Ok</span>(Json {
-      pos: args[<span class="number">0</span>].pos,
-      ln: args[<span class="number">0</span>].ln,
-      value: JValue::IntVar(ret),
-    })
+    <span class="prelude-val">Ok</span>(JValue::IntVar(ret))
   }
   <span class="doccomment">/// Performs subtraction.
   ///
@@ -956,9 +910,9 @@ _start:
   ///
   /// # Returns
   ///
-  /// * `Ok(Json)` - A `Json` object representing the difference.
+  /// * `Ok(JValue)` - A `Json` object representing the difference.
   /// * `Err(JError)` - If an error occurred during the subtraction.
-  </span><span class="kw">fn </span>minus(<span class="kw-2">&amp;mut </span><span class="self">self</span>, args: <span class="kw-2">&amp;</span>[Json], function: <span class="kw-2">&amp;mut </span>String) -&gt; JResult {
+  </span><span class="kw">fn </span>minus(<span class="kw-2">&amp;mut </span><span class="self">self</span>, args: <span class="kw-2">&amp;</span>[Json], function: <span class="kw-2">&amp;mut </span>String) -&gt; JFuncResult {
     <span class="self">self</span>.assert(
       !args.is_empty(),
       <span class="string">"'-' requires at least one arguments"</span>,
@@ -967,25 +921,21 @@ _start:
     <span class="kw">match </span><span class="self">self</span>.eval(<span class="kw-2">&amp;</span>args[<span class="number">0</span>], function)<span class="question-mark">?</span>.value {
       JValue::Int(l) =&gt; <span class="macro">writeln!</span>(function, <span class="string">"  mov rax, {l}"</span>)<span class="question-mark">?</span>,
       JValue::IntVar(v) =&gt; <span class="macro">writeln!</span>(function, <span class="string">"  mov rax, QWORD PTR {v}[rip]"</span>)<span class="question-mark">?</span>,
-      <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="self">self</span>.obj_err(<span class="string">"'-' requires integer operands"</span>, <span class="kw-2">&amp;</span>args[<span class="number">0</span>]),
+      <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="string">"'-' requires integer operands"</span>.into()),
     }
     <span class="kw">for </span>a <span class="kw">in </span><span class="kw-2">&amp;</span>args[<span class="number">2</span>..args.len()] {
       <span class="kw">match </span><span class="self">self</span>.eval(a, function)<span class="question-mark">?</span>.value {
         JValue::Int(l) =&gt; <span class="macro">writeln!</span>(function, <span class="string">"  sub rax, {l}"</span>)<span class="question-mark">?</span>,
         JValue::IntVar(v) =&gt; <span class="macro">writeln!</span>(function, <span class="string">"  sub rax, QWORD PTR {v}[rip]"</span>)<span class="question-mark">?</span>,
         <span class="kw">_ </span>=&gt; {
-          <span class="kw">return </span><span class="self">self</span>.obj_err(<span class="string">"'+' requires integer operands"</span>, <span class="kw-2">&amp;</span>args[<span class="number">0</span>]);
+          <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="string">"'+' requires integer operands"</span>.into());
         }
       };
     }
     <span class="kw">let </span>ret = <span class="self">self</span>.get_name();
     <span class="macro">writeln!</span>(<span class="self">self</span>.bss, <span class="string">"  .lcomm {ret}, 8"</span>)<span class="question-mark">?</span>;
     <span class="macro">writeln!</span>(function, <span class="string">"  mov QWORD PTR {ret}[rip], rax"</span>)<span class="question-mark">?</span>;
-    <span class="prelude-val">Ok</span>(Json {
-      pos: args[<span class="number">0</span>].pos,
-      ln: args[<span class="number">0</span>].ln,
-      value: JValue::IntVar(ret),
-    })
+    <span class="prelude-val">Ok</span>(JValue::IntVar(ret))
   }
   <span class="doccomment">/// Displays a message box.
   ///
@@ -998,9 +948,9 @@ _start:
   ///
   /// # Returns
   ///
-  /// * `Ok(Json)` - A `Json` object representing the result of the message box.
+  /// * `Ok(JValue)` - A `Json` object representing the result of the message box.
   /// * `Err(JError)` - If an error occurred while displaying the message box.
-  </span><span class="kw">fn </span>message(<span class="kw-2">&amp;mut </span><span class="self">self</span>, args: <span class="kw-2">&amp;</span>[Json], function: <span class="kw-2">&amp;mut </span>String) -&gt; JResult {
+  </span><span class="kw">fn </span>message(<span class="kw-2">&amp;mut </span><span class="self">self</span>, args: <span class="kw-2">&amp;</span>[Json], function: <span class="kw-2">&amp;mut </span>String) -&gt; JFuncResult {
     <span class="self">self</span>.assert(
       args.len() == <span class="number">2</span>,
       <span class="string">"'message' requires two arguments"</span>,
@@ -1014,7 +964,7 @@ _start:
       }
       JValue::StringVar(v) =&gt; v,
       <span class="kw">_ </span>=&gt; {
-        <span class="kw">return </span><span class="self">self</span>.obj_err(<span class="string">"The first argument of message must be a string"</span>, <span class="kw-2">&amp;</span>args[<span class="number">0</span>]);
+        <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="string">"The first argument of message must be a string"</span>.into());
       }
     };
     <span class="kw">let </span>msg = <span class="kw">match </span><span class="self">self</span>.eval(<span class="kw-2">&amp;</span>args[<span class="number">1</span>], function)<span class="question-mark">?</span>.value {
@@ -1025,7 +975,7 @@ _start:
       }
       JValue::StringVar(v) =&gt; v,
       <span class="kw">_ </span>=&gt; {
-        <span class="kw">return </span><span class="self">self</span>.obj_err(<span class="string">"The second argument of message must be a string"</span>, <span class="kw-2">&amp;</span>args[<span class="number">1</span>]);
+        <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="string">"The second argument of message must be a string"</span>.into());
       }
     };
     <span class="kw">let </span>ret = <span class="self">self</span>.get_name();
@@ -1041,7 +991,7 @@ _start:
   jz display_error
   mov QWORD PTR {ret}[rip], rax"</span>,
     )<span class="question-mark">?</span>;
-    <span class="prelude-val">Ok</span>(obj_json(JValue::IntVar(ret), <span class="kw-2">&amp;</span>args[<span class="number">0</span>]))
+    <span class="prelude-val">Ok</span>(JValue::IntVar(ret))
   }
 }
 </code></pre></div></section></main></body></html>
