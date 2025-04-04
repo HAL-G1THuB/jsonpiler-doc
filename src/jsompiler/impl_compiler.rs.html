@@ -496,7 +496,26 @@
 <a href="#495" id="495">495</a>
 <a href="#496" id="496">496</a>
 <a href="#497" id="497">497</a>
-<a href="#498" id="498">498</a></pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::utility::dummy;
+<a href="#498" id="498">498</a>
+<a href="#499" id="499">499</a>
+<a href="#500" id="500">500</a>
+<a href="#501" id="501">501</a>
+<a href="#502" id="502">502</a>
+<a href="#503" id="503">503</a>
+<a href="#504" id="504">504</a>
+<a href="#505" id="505">505</a>
+<a href="#506" id="506">506</a>
+<a href="#507" id="507">507</a>
+<a href="#508" id="508">508</a>
+<a href="#509" id="509">509</a>
+<a href="#510" id="510">510</a>
+<a href="#511" id="511">511</a>
+<a href="#512" id="512">512</a>
+<a href="#513" id="513">513</a>
+<a href="#514" id="514">514</a>
+<a href="#515" id="515">515</a>
+<a href="#516" id="516">516</a>
+<a href="#517" id="517">517</a></pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::utility::dummy;
 <span class="kw">use super</span>::{JFunc, JFuncResult, JResult, JValue, Jsompiler, Json, utility::obj_json};
 <span class="kw">use </span>std::fmt::Write <span class="kw">as _</span>;
 <span class="kw">use </span>std::fs::File;
@@ -583,15 +602,14 @@
   .lcomm STDO, 8
   .lcomm STDE, 8
   .lcomm STDI, 8
+  .lcomm EMSG, 8
 "</span>,
     )<span class="question-mark">?</span>;
     writer.write_all(<span class="self">self</span>.bss.as_bytes())<span class="question-mark">?</span>;
     writer.write_all(
       <span class="string">br".text
 _start:
-  push rbp
-  mov rbp, rsp
-  sub rsp, 32
+  sub rsp, 40
   mov ecx, 65001
   call SetConsoleCP
   test rax, rax
@@ -629,22 +647,21 @@ display_error:
   xor edx, edx
   mov r8, rbx
   xor r9d, r9d
-  lea rax, QWORD PTR 32[rsp]
-  mov QWORD PTR 32[rsp], rax
-  mov QWORD PTR 40[rsp], 0
-  mov QWORD PTR 48[rsp], 0
+  lea rax, QWORD PTR EMSG[rip]
+  mov QWORD PTR 0x20[rsp], rax
+  mov QWORD PTR 0x28[rsp], 0
+  mov QWORD PTR 0x30[rsp], 0
   call FormatMessageW
   test rax, rax
   jz exit_program
   xor ecx, ecx
-  mov rdx, QWORD PTR 32[rsp]
+  mov rdx, QWORD PTR EMSG[rip]
   xor r8d, r8d
   mov r9, 0x10
   call MessageBoxW
 exit_program:
-  mov rcx, QWORD PTR 32[rsp]
+  mov rcx, QWORD PTR EMSG[rip]
   call LocalFree
-  add rsp, 32
   mov rcx, rbx
   call ExitProcess
 "</span>,
@@ -687,19 +704,6 @@ exit_program:
     <span class="prelude-val">Ok</span>(result)
   }
   <span class="doccomment">/// Evaluates a JSON object.
-  ///
-  /// This function recursively evaluates a JSON object, handling function calls and other
-  /// operations.
-  ///
-  /// # Arguments
-  ///
-  /// * `parsed` - The JSON object to evaluate.
-  /// * `function` - A mutable string to accumulate the assembly code.
-  ///
-  /// # Returns
-  ///
-  /// * `Ok(Json)` - The result of the evaluation.
-  /// * `Err(JError)` - If an error occurred during the evaluation.
   </span><span class="kw">fn </span>eval(<span class="kw-2">&amp;mut </span><span class="self">self</span>, parsed: <span class="kw-2">&amp;</span>Json, function: <span class="kw-2">&amp;mut </span>String) -&gt; JResult {
     <span class="kw">let </span>JValue::Array(list) = <span class="kw-2">&amp;</span>parsed.value <span class="kw">else </span>{
       <span class="kw">return </span><span class="prelude-val">Ok</span>(parsed.clone());
@@ -978,18 +982,52 @@ exit_program:
         <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="string">"The second argument of message must be a string"</span>.into());
       }
     };
+    <span class="macro">writeln!</span>(function, <span class="string">"  sub rsp, 16"</span>)<span class="question-mark">?</span>;
+    <span class="kw">let </span>wtitle = <span class="self">self</span>.get_name();
+    <span class="kw">let </span>wmsg = <span class="self">self</span>.get_name();
+    <span class="kw">for </span>(c, w) <span class="kw">in </span>[(<span class="kw-2">&amp;</span>msg, <span class="kw-2">&amp;</span>wmsg), (<span class="kw-2">&amp;</span>title, <span class="kw-2">&amp;</span>wtitle)] {
+      <span class="macro">writeln!</span>(<span class="self">self</span>.bss, <span class="string">"  .lcomm {w}, 8"</span>)<span class="question-mark">?</span>;
+      <span class="macro">writeln!</span>(function, <span class="string">r"  mov ecx, 65001
+  xor edx, edx
+  lea r8, QWORD PTR {c}[rip]
+  mov r9d, -1
+  mov QWORD PTR 0x20[rsp], 0
+  mov QWORD PTR 0x28[rsp], 0
+  call MultiByteToWideChar
+  test rax, rax
+  jz display_error
+  shl eax, 1
+  mov edi, eax
+  mov ecx, eax
+  call malloc
+  mov r12, rax
+  mov ecx, 65001
+  xor edx, edx
+  lea r8, QWORD PTR {c}[rip]
+  mov r9d, -1
+  mov QWORD PTR 0x20[rsp], r12
+  mov QWORD PTR 0x28[rsp], rdi
+  call MultiByteToWideChar
+  test rax, rax
+  jz display_error
+  mov QWORD PTR {w}[rip], r12"</span>)<span class="question-mark">?</span>;}
     <span class="kw">let </span>ret = <span class="self">self</span>.get_name();
     <span class="macro">writeln!</span>(<span class="self">self</span>.bss, <span class="string">"  .lcomm {ret}, 8"</span>)<span class="question-mark">?</span>;
     <span class="macro">writeln!</span>(
       function,
       <span class="string">r"  xor ecx, ecx
-  lea rdx, QWORD PTR {msg}[rip]
-  lea r8, QWORD PTR {title}[rip]
+  mov rdx, QWORD PTR {wmsg}[rip]
+  mov r8, QWORD PTR {wtitle}[rip]
   xor r9d, r9d
-  call MessageBoxA
-  test eax, eax
+  call MessageBoxW
+  test rax, rax
   jz display_error
-  mov QWORD PTR {ret}[rip], rax"</span>,
+  mov QWORD PTR {ret}[rip], rax
+  mov rcx, QWORD PTR {wmsg}[rip]
+  call free
+  mov rcx, QWORD PTR {wtitle}[rip]
+  call free
+  add rsp, 16"</span>,
     )<span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(JValue::IntVar(ret))
   }
