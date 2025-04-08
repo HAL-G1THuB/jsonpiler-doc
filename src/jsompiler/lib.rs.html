@@ -180,7 +180,18 @@
 <a href="#179" id="179">179</a>
 <a href="#180" id="180">180</a>
 <a href="#181" id="181">181</a>
-<a href="#182" id="182">182</a></pre></div><pre class="rust"><code><span class="doccomment">//! (main.rs)
+<a href="#182" id="182">182</a>
+<a href="#183" id="183">183</a>
+<a href="#184" id="184">184</a>
+<a href="#185" id="185">185</a>
+<a href="#186" id="186">186</a>
+<a href="#187" id="187">187</a>
+<a href="#188" id="188">188</a>
+<a href="#189" id="189">189</a>
+<a href="#190" id="190">190</a>
+<a href="#191" id="191">191</a>
+<a href="#192" id="192">192</a>
+<a href="#193" id="193">193</a></pre></div><pre class="rust"><code><span class="doccomment">//! (main.rs)
 //! ```rust
 //! fn main() -&gt; ! {
 //!  jsompiler::run()
@@ -194,7 +205,14 @@
 <span class="kw">pub type </span>JResult = <span class="prelude-ty">Result</span>&lt;Json, Box&lt;<span class="kw">dyn </span>Error&gt;&gt;;
 <span class="kw">pub type </span>JFunc&lt;T&gt; = <span class="kw">fn</span>(<span class="kw-2">&amp;mut </span>T, <span class="kw-2">&amp;</span>[Json], <span class="kw-2">&amp;mut </span>String) -&gt; <span class="prelude-ty">Result</span>&lt;JValue, Box&lt;<span class="kw">dyn </span>Error&gt;&gt;;
 <span class="kw">pub type </span>JFuncResult = <span class="prelude-ty">Result</span>&lt;JValue, Box&lt;<span class="kw">dyn </span>Error&gt;&gt;;
-<span class="kw">use </span>std::{collections::HashMap, env, error::Error, fmt, fs, path::Path, process::Command};
+<span class="kw">use </span>std::{
+  collections::HashMap,
+  env,
+  error::Error,
+  fmt, fs,
+  path::Path,
+  process::{Command, exit},
+};
 <span class="doccomment">/// Runs the Jsompiler, compiling and executing a JSON-based program.
 ///
 /// This function serves as the main entry point for the Jsompiler. It performs the following steps:
@@ -252,9 +270,12 @@
   <span class="attr">#[cfg(not(target_os = <span class="string">"windows"</span>))]
   </span><span class="macro">compile_error!</span>(<span class="string">"This program can only run on Windows."</span>);
   <span class="kw">let </span>args: Vec&lt;String&gt; = env::args().collect();
-  <span class="kw">if </span>args.len() != <span class="number">2 </span>{
-    <span class="macro">eprintln!</span>(<span class="string">"Usage: {} &lt;input json file&gt;"</span>, args[<span class="number">0</span>]);
-    std::process::exit(<span class="number">0</span>)
+  <span class="kw">if </span>args.len() &lt;= <span class="number">1 </span>{
+    <span class="macro">eprintln!</span>(
+      <span class="string">"Usage: {} &lt;input json file&gt; [arguments of .exe...]"</span>,
+      args[<span class="number">0</span>]
+    );
+    exit(<span class="number">0</span>)
   }
   <span class="kw">let </span>input_code = fs::read_to_string(<span class="kw-2">&amp;</span>args[<span class="number">1</span>])
     .unwrap_or_else(|e| error_exit(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"Failed to read file: {e}"</span>)));
@@ -302,13 +323,14 @@
     .unwrap_or_else(|e| error_exit(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"Failed to get current directory: {e}"</span>)));
   path.push(<span class="kw-2">&amp;</span>exe_file);
   <span class="kw">let </span>exit_code = Command::new(path)
+    .args(<span class="kw-2">&amp;</span>args[<span class="number">2</span>..])
     .spawn()
     .unwrap_or_else(|e| error_exit(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"Failed to spawn child process: {e}"</span>)))
     .wait()
     .unwrap_or_else(|e| error_exit(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"Failed to wait for child process: {e}"</span>)))
     .code()
     .unwrap_or_else(|| error_exit(<span class="string">"Failed to retrieve the exit code"</span>));
-  std::process::exit(exit_code)
+  exit(exit_code)
 }
 <span class="attr">#[derive(Debug, Clone)]
 </span><span class="kw">pub struct </span>Json {

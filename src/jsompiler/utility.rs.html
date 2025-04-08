@@ -174,10 +174,18 @@
 <a href="#173" id="173">173</a>
 <a href="#174" id="174">174</a>
 <a href="#175" id="175">175</a>
-<a href="#176" id="176">176</a></pre></div><pre class="rust"><code><span class="doccomment">//! Utility functions.
-</span><span class="attr">#![allow(dead_code)]
+<a href="#176" id="176">176</a>
+<a href="#177" id="177">177</a>
+<a href="#178" id="178">178</a>
+<a href="#179" id="179">179</a>
+<a href="#180" id="180">180</a>
+<a href="#181" id="181">181</a></pre></div><pre class="rust"><code><span class="doccomment">//! Utility functions.
 </span><span class="kw">use crate</span>::{JError, JResult, JValue, Json};
-<span class="kw">use </span>std::{error::Error, io};
+<span class="kw">use </span>core::{
+  error::Error,
+  fmt::{<span class="self">self</span>, Write <span class="kw">as _</span>},
+};
+<span class="kw">use </span>std::{io, process::exit};
 <span class="doccomment">/// Format error.
 ///
 /// # Examples
@@ -236,7 +244,7 @@
   <span class="kw">let </span><span class="kw-2">mut </span>nu = String::new();
   <span class="macro">eprint!</span>(<span class="string">"{text}\nPress Enter to exit:"</span>);
   <span class="kw">let _ </span>= io::stdin().read_line(<span class="kw-2">&amp;mut </span>nu);
-  std::process::exit(<span class="number">1</span>)
+  exit(<span class="number">1</span>)
 }
 <span class="attr">#[must_use]
 </span><span class="kw">pub const fn </span>dummy() -&gt; Json {
@@ -321,26 +329,28 @@
 ///
 /// * `s` - The string to be escaped.
 ///
+/// # Errors
+///
+/// * `fmt::Error` - ...
 /// # Returns
 ///
 /// * `String` - The escaped string.
-</span><span class="attr">#[must_use]
-</span><span class="kw">pub fn </span>escape_string(s: <span class="kw-2">&amp;</span>str) -&gt; String {
+</span><span class="kw">pub fn </span>escape_string(unescaped: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;String, fmt::Error&gt; {
   <span class="kw">let </span><span class="kw-2">mut </span>escaped = String::new();
-  <span class="kw">for </span>c <span class="kw">in </span>s.chars() {
-    <span class="kw">match </span>c {
-      <span class="string">'"' </span>=&gt; escaped.push_str(<span class="string">"\\\""</span>),
-      <span class="string">'\\' </span>=&gt; escaped.push_str(<span class="string">"\\\\"</span>),
-      <span class="string">'\n' </span>=&gt; escaped.push_str(<span class="string">"\\n"</span>),
-      <span class="string">'\t' </span>=&gt; escaped.push_str(<span class="string">"\\t"</span>),
-      <span class="string">'\r' </span>=&gt; escaped.push_str(<span class="string">"\\r"</span>),
-      <span class="string">'\u{08}' </span>=&gt; escaped.push_str(<span class="string">"\\b"</span>),
-      <span class="string">'\u{0C}' </span>=&gt; escaped.push_str(<span class="string">"\\f"</span>),
-      c <span class="kw">if </span>c &lt; <span class="string">'\u{20}' </span>=&gt; escaped.push_str(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"\\u{:04x}"</span>, c <span class="kw">as </span>u32)),
-      <span class="kw">_ </span>=&gt; escaped.push(c),
+  <span class="kw">for </span>ch <span class="kw">in </span>unescaped.chars() {
+    <span class="kw">match </span>ch {
+      <span class="string">'"' </span>=&gt; <span class="macro">write!</span>(escaped, <span class="string">"\\\""</span>)<span class="question-mark">?</span>,
+      <span class="string">'\\' </span>=&gt; <span class="macro">write!</span>(escaped, <span class="string">r"\\"</span>)<span class="question-mark">?</span>,
+      <span class="string">'\n' </span>=&gt; <span class="macro">write!</span>(escaped, <span class="string">r"\n"</span>)<span class="question-mark">?</span>,
+      <span class="string">'\t' </span>=&gt; <span class="macro">write!</span>(escaped, <span class="string">r"\t"</span>)<span class="question-mark">?</span>,
+      <span class="string">'\r' </span>=&gt; <span class="macro">write!</span>(escaped, <span class="string">r"\r"</span>)<span class="question-mark">?</span>,
+      <span class="string">'\u{08}' </span>=&gt; <span class="macro">write!</span>(escaped, <span class="string">r"\b"</span>)<span class="question-mark">?</span>,
+      <span class="string">'\u{0C}' </span>=&gt; <span class="macro">write!</span>(escaped, <span class="string">r"\f"</span>)<span class="question-mark">?</span>,
+      u_ch <span class="kw">if </span>u_ch &lt; <span class="string">'\u{20}' </span>=&gt; <span class="macro">write!</span>(escaped, <span class="string">"\\u{:04x}"</span>, u_ch <span class="kw">as </span>u32)<span class="question-mark">?</span>,
+      <span class="kw">_ </span>=&gt; escaped.push(ch),
     }
   }
-  escaped
+  <span class="prelude-val">Ok</span>(escaped)
 }
 <span class="attr">#[must_use]
 </span><span class="kw">pub const fn </span>obj_json(val: JValue, obj: <span class="kw-2">&amp;</span>Json) -&gt; Json {

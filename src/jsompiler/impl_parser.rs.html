@@ -314,83 +314,17 @@
 <a href="#313" id="313">313</a>
 <a href="#314" id="314">314</a>
 <a href="#315" id="315">315</a>
-<a href="#316" id="316">316</a>
-<a href="#317" id="317">317</a>
-<a href="#318" id="318">318</a>
-<a href="#319" id="319">319</a>
-<a href="#320" id="320">320</a>
-<a href="#321" id="321">321</a>
-<a href="#322" id="322">322</a>
-<a href="#323" id="323">323</a>
-<a href="#324" id="324">324</a>
-<a href="#325" id="325">325</a>
-<a href="#326" id="326">326</a>
-<a href="#327" id="327">327</a>
-<a href="#328" id="328">328</a>
-<a href="#329" id="329">329</a>
-<a href="#330" id="330">330</a>
-<a href="#331" id="331">331</a>
-<a href="#332" id="332">332</a>
-<a href="#333" id="333">333</a>
-<a href="#334" id="334">334</a>
-<a href="#335" id="335">335</a>
-<a href="#336" id="336">336</a>
-<a href="#337" id="337">337</a>
-<a href="#338" id="338">338</a>
-<a href="#339" id="339">339</a>
-<a href="#340" id="340">340</a>
-<a href="#341" id="341">341</a>
-<a href="#342" id="342">342</a>
-<a href="#343" id="343">343</a>
-<a href="#344" id="344">344</a>
-<a href="#345" id="345">345</a>
-<a href="#346" id="346">346</a>
-<a href="#347" id="347">347</a>
-<a href="#348" id="348">348</a>
-<a href="#349" id="349">349</a>
-<a href="#350" id="350">350</a>
-<a href="#351" id="351">351</a>
-<a href="#352" id="352">352</a>
-<a href="#353" id="353">353</a>
-<a href="#354" id="354">354</a>
-<a href="#355" id="355">355</a>
-<a href="#356" id="356">356</a>
-<a href="#357" id="357">357</a>
-<a href="#358" id="358">358</a>
-<a href="#359" id="359">359</a>
-<a href="#360" id="360">360</a>
-<a href="#361" id="361">361</a>
-<a href="#362" id="362">362</a>
-<a href="#363" id="363">363</a>
-<a href="#364" id="364">364</a>
-<a href="#365" id="365">365</a>
-<a href="#366" id="366">366</a>
-<a href="#367" id="367">367</a>
-<a href="#368" id="368">368</a></pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::utility::dummy;
+<a href="#316" id="316">316</a></pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::utility::dummy;
 <span class="kw">use super</span>::{JResult, JValue, Jsompiler, Json};
 <span class="kw">use </span>std::collections::HashMap;
 <span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; Jsompiler&lt;<span class="lifetime">'a</span>&gt; {
   <span class="doccomment">/// Advances the current position in the input code and returns the next character.
-  ///
-  /// # Returns
-  ///
-  /// * `Ok(char)` - The next character in the input code.
-  /// * `Err(String)` - If the end of the input code is reached.
   </span><span class="kw">fn </span>next(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;char, String&gt; {
     <span class="kw">let </span>ch = <span class="self">self</span>.input_code[<span class="self">self</span>.pos..].chars().next().ok_or(<span class="string">"Reached end of text"</span>)<span class="question-mark">?</span>;
     <span class="self">self</span>.pos += ch.len_utf8();
     <span class="prelude-val">Ok</span>(ch)
   }
   <span class="doccomment">/// Checks if the next character in the input code matches the expected character.
-  ///
-  /// # Arguments
-  ///
-  /// * `expected` - The character expected at the current position.
-  ///
-  /// # Returns
-  ///
-  /// * `Ok(Json)` - A dummy `Json` object if the expected character is found.
-  /// * `Err(Box&lt;dyn Error&gt;)` - An error if the expected character is not found.
   </span><span class="kw">fn </span>expect(<span class="kw-2">&amp;mut </span><span class="self">self</span>, expected: char) -&gt; JResult {
     <span class="kw">if </span><span class="self">self</span>.input_code[<span class="self">self</span>.pos..].starts_with(expected) {
       <span class="self">self</span>.next()<span class="question-mark">?</span>;
@@ -439,16 +373,6 @@
     }
   }
   <span class="doccomment">/// Parses a specific name and returns a `Json` object with the associated value.
-  ///
-  /// # Arguments
-  ///
-  /// * `n` - The name to parse.
-  /// * `v` - The `JValue` associated with the name.
-  ///
-  /// # Returns
-  ///
-  /// * `Ok(Json)` - The `Json` object representing the parsed name and value.
-  /// * `Err(Box&lt;dyn Error&gt;)` - An error if the name is not found.
   </span><span class="kw">fn </span>parse_name(<span class="kw-2">&amp;mut </span><span class="self">self</span>, n: <span class="kw-2">&amp;</span>str, v: JValue) -&gt; JResult {
     <span class="kw">if </span><span class="self">self</span>.input_code[<span class="self">self</span>.pos..].starts_with(n) {
       <span class="kw">let </span>start = <span class="self">self</span>.pos;
@@ -463,11 +387,6 @@
     }
   }
   <span class="doccomment">/// Parses a number (integer or float) from the input code.
-  ///
-  /// # Returns
-  ///
-  /// * `Ok(Json)` - The `Json` object representing the parsed number.
-  /// * `Err(Box&lt;dyn Error&gt;)` - An error if the number is invalid.
   </span><span class="kw">fn </span>parse_number(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; JResult {
     <span class="kw">let </span>start = <span class="self">self</span>.pos;
     <span class="kw">let </span><span class="kw-2">mut </span>num_str = String::new();
@@ -503,9 +422,9 @@
         <span class="kw">if </span>!<span class="macro">matches!</span>(<span class="self">self</span>.input_code[<span class="self">self</span>.pos..].chars().next(), <span class="prelude-val">Some</span>(c) <span class="kw">if </span>c.is_ascii_digit()) {
           <span class="kw">return </span><span class="self">self</span>.parse_err(<span class="string">"A digit is required after the decimal point"</span>);
         }
-        <span class="kw">while let </span><span class="prelude-val">Some</span>(ch) = <span class="self">self</span>.input_code[<span class="self">self</span>.pos..].chars().next() {
-          <span class="kw">if </span>ch.is_ascii_digit() {
-            num_str.push(ch);
+        <span class="kw">while let </span><span class="prelude-val">Some</span>(ch2) = <span class="self">self</span>.input_code[<span class="self">self</span>.pos..].chars().next() {
+          <span class="kw">if </span>ch2.is_ascii_digit() {
+            num_str.push(ch2);
             <span class="self">self</span>.next()<span class="question-mark">?</span>;
           } <span class="kw">else </span>{
             <span class="kw">break</span>;
@@ -559,11 +478,6 @@
     }
   }
   <span class="doccomment">/// Parses a string from the input code.
-  ///
-  /// # Returns
-  ///
-  /// * `Ok(Json)` - The `Json` object representing the parsed string.
-  /// * `Err(Box&lt;dyn Error&gt;)` - An error if the string is invalid.
   </span><span class="kw">fn </span>parse_string(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; JResult {
     <span class="kw">if </span>!<span class="self">self</span>.input_code[<span class="self">self</span>.pos..].starts_with(<span class="string">'\"'</span>) {
       <span class="kw">return </span><span class="self">self</span>.parse_err(<span class="string">"Missing opening quotation for string"</span>);
@@ -629,11 +543,6 @@
     <span class="self">self</span>.parse_err(<span class="string">"String is not properly terminated"</span>)
   }
   <span class="doccomment">/// Parses an array from the input code.
-  ///
-  /// # Returns
-  ///
-  /// * `Ok(Json)` - The `Json` object representing the parsed array.
-  /// * `Err(Box&lt;dyn Error&gt;)` - An error if the array is invalid.
   </span><span class="kw">fn </span>parse_array(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; JResult {
     <span class="kw">let </span>start_pos = <span class="self">self</span>.pos;
     <span class="kw">let </span>start_ln = <span class="self">self</span>.ln;
@@ -665,11 +574,6 @@
     }
   }
   <span class="doccomment">/// Parses an object from the input code.
-  ///
-  /// # Returns
-  ///
-  /// * `Ok(Json)` - The `Json` object representing the parsed object.
-  /// * `Err(Box&lt;dyn Error&gt;)` - An error if the object is invalid.
   </span><span class="kw">fn </span>parse_object(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; JResult {
     <span class="kw">let </span>start_pos = <span class="self">self</span>.pos;
     <span class="kw">let </span>start_ln = <span class="self">self</span>.ln;
@@ -708,14 +612,6 @@
     }
   }
   <span class="doccomment">/// Parses a value from the input code.
-  ///
-  /// This function determines the type of value (string, number, array, object, etc.)
-  /// and calls the appropriate parsing function.
-  ///
-  /// # Returns
-  ///
-  /// * `Ok(Json)` - The `Json` object representing the parsed value.
-  /// * `Err(Box&lt;dyn Error&gt;)` - An error if the value is invalid.
   </span><span class="kw">fn </span>parse_value(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; JResult {
     <span class="self">self</span>.skip_ws();
     <span class="kw">if </span><span class="self">self</span>.pos &gt;= <span class="self">self</span>.input_code.len() {

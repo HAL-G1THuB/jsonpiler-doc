@@ -81,22 +81,7 @@
 <a href="#80" id="80">80</a>
 <a href="#81" id="81">81</a>
 <a href="#82" id="82">82</a></pre></div><pre class="rust"><code><span class="kw">use super</span>::{JValue, Json, utility::escape_string};
-<span class="kw">use </span>std::fmt;
-<span class="kw">impl </span>fmt::Display <span class="kw">for </span>Json {
-  <span class="doccomment">/// Formats the `Json` object as a human-readable string.
-  ///
-  /// # Arguments
-  ///
-  /// * `f` - A mutable reference to the `fmt::Formatter`, which is used to write the formatted
-  ///   string.
-  ///
-  /// # Returns
-  ///
-  /// * `fmt::Result` - The result of the formatting operation, indicating success or failure.impl `fmt::Display` for Json {
-  </span><span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter) -&gt; fmt::Result {
-    <span class="self">self</span>.write_json(f, <span class="number">0</span>)
-  }
-}
+<span class="kw">use </span>core::fmt;
 <span class="kw">impl </span>Json {
   <span class="doccomment">/// Recursively writes the `Json` value to the formatter, with indentation based on depth.
   ///
@@ -118,7 +103,7 @@
       JValue::IntVar(v) =&gt; <span class="macro">write!</span>(out, <span class="string">"({v}: int)"</span>),
       JValue::Float(f) =&gt; <span class="macro">write!</span>(out, <span class="string">"{f}"</span>),
       JValue::FloatVar(v) =&gt; <span class="macro">write!</span>(out, <span class="string">"({v}: float)"</span>),
-      JValue::String(s) =&gt; <span class="macro">write!</span>(out, <span class="string">"\"{}\""</span>, escape_string(s)),
+      JValue::String(s) =&gt; <span class="macro">write!</span>(out, <span class="string">"\"{}\""</span>, escape_string(s)<span class="question-mark">?</span>),
       JValue::StringVar(v) =&gt; <span class="macro">write!</span>(out, <span class="string">"({v}: string)"</span>),
       JValue::Array(a) =&gt; {
         out.write_str(<span class="string">"[\n"</span>)<span class="question-mark">?</span>;
@@ -144,22 +129,37 @@
         }
         out.write_str(<span class="string">")"</span>)
       }
-      JValue::Object(o) =&gt; {
+      JValue::Object(obj) =&gt; {
         out.write_str(<span class="string">"{\n"</span>)<span class="question-mark">?</span>;
-        <span class="kw">for </span>(i, (k, v)) <span class="kw">in </span>o.iter().enumerate() {
+        <span class="kw">for </span>(i, (k, v)) <span class="kw">in </span>obj.iter().enumerate() {
           <span class="kw">if </span>i &gt; <span class="number">0 </span>{
             out.write_str(<span class="string">",\n"</span>)<span class="question-mark">?</span>;
           }
           out.write_str(<span class="kw-2">&amp;</span><span class="string">"  "</span>.repeat(depth + <span class="number">1</span>))<span class="question-mark">?</span>;
-          <span class="macro">write!</span>(out, <span class="string">"\"{}\": "</span>, escape_string(k))<span class="question-mark">?</span>;
+          <span class="macro">write!</span>(out, <span class="string">"\"{}\": "</span>, escape_string(k)<span class="question-mark">?</span>)<span class="question-mark">?</span>;
           v.write_json(out, depth + <span class="number">1</span>)<span class="question-mark">?</span>;
         }
         out.write_str(<span class="string">"\n"</span>)<span class="question-mark">?</span>;
         out.write_str(<span class="kw-2">&amp;</span><span class="string">"  "</span>.repeat(depth))<span class="question-mark">?</span>;
         out.write_str(<span class="string">"}"</span>)
       }
-      JValue::ObjectVar(v) =&gt; <span class="macro">write!</span>(out, <span class="string">"({v}: object)"</span>),
+      JValue::ObjectVar(obj_var) =&gt; <span class="macro">write!</span>(out, <span class="string">"({obj_var}: object)"</span>),
     }
+  }
+}
+<span class="kw">impl </span>fmt::Display <span class="kw">for </span>Json {
+  <span class="doccomment">/// Formats the `Json` object as a human-readable string.
+  ///
+  /// # Arguments
+  ///
+  /// * `f` - A mutable reference to the `fmt::Formatter`, which is used to write the formatted
+  ///   string.
+  ///
+  /// # Returns
+  ///
+  /// * `fmt::Result` - The result of the formatting operation, indicating success or failure.impl `fmt::Display` for Json {
+  </span><span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter) -&gt; fmt::Result {
+    <span class="self">self</span>.write_json(f, <span class="number">0</span>)
   }
 }
 </code></pre></div></section></main></body></html>
