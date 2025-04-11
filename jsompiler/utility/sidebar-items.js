@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["de64","dummy","en64","error_exit","escape_string","format_err","obj_json"]};

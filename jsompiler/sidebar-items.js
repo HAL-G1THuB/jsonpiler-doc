@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["JValue"],"fn":["run"],"mod":["utility"],"struct":["JError","Jsompiler","Json"],"type":["JFunc","JFuncResult","JResult"]};
+window.SIDEBAR_ITEMS = {"enum":["JValue"],"fn":["run"],"struct":["Jsompiler","Json"]};
