@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["run"],"struct":["Jsompiler"]};
+window.SIDEBAR_ITEMS = {"fn":["main"]};
