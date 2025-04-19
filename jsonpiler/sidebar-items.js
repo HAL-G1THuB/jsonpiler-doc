@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["run"],"struct":["Jsonpiler"]};
+window.SIDEBAR_ITEMS = {"mod":["functions"],"struct":["Jsonpiler"]};
