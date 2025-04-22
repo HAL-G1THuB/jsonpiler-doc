@@ -1,1 +1,1 @@
-searchState.loadedDescShard("jsonpiler", 0, "(main.rs)\nParser and compiler.\nBuilds the assembly code from the parsed JSON. This …\nReturns the argument unchanged.\nUtility functions.\nCalls <code>U::from(self)</code>.\nCompiles and executes a JSON-based program using the …")
+searchState.loadedDescShard("jsonpiler", 0, "(main.rs)\nParser and compiler.\nBuilds the assembly code from the parsed JSON. This …\nReturns the argument unchanged.\nCalls <code>U::from(self)</code>.\nCompiles and executes a JSON-based program using the …")
