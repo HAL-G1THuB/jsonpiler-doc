@@ -20,337 +20,304 @@
 <a href=#20 id=20 data-nosnippet>20</a>    process::{Command, ExitCode},
 <a href=#21 id=21 data-nosnippet>21</a>  },
 <a href=#22 id=22 data-nosnippet>22</a>};
-<a href=#23 id=23 data-nosnippet>23</a><span class="attr">#[derive(Debug, Clone)]
-<a href=#24 id=24 data-nosnippet>24</a></span><span class="doccomment">/// Assembly function representation.
-<a href=#25 id=25 data-nosnippet>25</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>AsmFunc {
-<a href=#26 id=26 data-nosnippet>26</a>  <span class="doccomment">/// Name of function.
-<a href=#27 id=27 data-nosnippet>27</a>  </span><span class="kw">pub </span>name: String,
-<a href=#28 id=28 data-nosnippet>28</a>  <span class="doccomment">/// Parameters of function.
-<a href=#29 id=29 data-nosnippet>29</a>  </span><span class="kw">pub </span>params: Vec&lt;Json&gt;,
-<a href=#30 id=30 data-nosnippet>30</a>  <span class="doccomment">/// Return type of function.
-<a href=#31 id=31 data-nosnippet>31</a>  </span><span class="kw">pub </span>ret: Box&lt;JValue&gt;,
-<a href=#32 id=32 data-nosnippet>32</a>}
-<a href=#33 id=33 data-nosnippet>33</a><span class="doccomment">/// Built-in function.
-<a href=#34 id=34 data-nosnippet>34</a></span><span class="attr">#[derive(Debug, Clone)]
-<a href=#35 id=35 data-nosnippet>35</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>BuiltinFunc {
-<a href=#36 id=36 data-nosnippet>36</a>  <span class="doccomment">/// Should arguments already be evaluated.
-<a href=#37 id=37 data-nosnippet>37</a>  </span><span class="kw">pub </span>do_not_eval: bool,
-<a href=#38 id=38 data-nosnippet>38</a>  <span class="doccomment">/// Pointer of function.
-<a href=#39 id=39 data-nosnippet>39</a>  </span><span class="kw">pub </span>func: JFunc,
-<a href=#40 id=40 data-nosnippet>40</a>  <span class="doccomment">/// If it is true, function introduces a new scope.
-<a href=#41 id=41 data-nosnippet>41</a>  </span><span class="kw">pub </span>scoped: bool,
-<a href=#42 id=42 data-nosnippet>42</a>}
-<a href=#43 id=43 data-nosnippet>43</a><span class="kw">type </span>ErrOR&lt;T&gt; = <span class="prelude-ty">Result</span>&lt;T, Box&lt;<span class="kw">dyn </span>Error&gt;&gt;;
-<a href=#44 id=44 data-nosnippet>44</a><span class="doccomment">/// line and pos in source code.
-<a href=#45 id=45 data-nosnippet>45</a></span><span class="attr">#[derive(Debug, Clone, Default)]
-<a href=#46 id=46 data-nosnippet>46</a>
-<a href=#47 id=47 data-nosnippet>47</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>ErrorInfo {
-<a href=#48 id=48 data-nosnippet>48</a>  <span class="doccomment">/// Line number of the part being parsed.
-<a href=#49 id=49 data-nosnippet>49</a>  </span>line: usize,
-<a href=#50 id=50 data-nosnippet>50</a>  <span class="doccomment">/// Location of the part being parsed.
-<a href=#51 id=51 data-nosnippet>51</a>  </span>pos: usize,
-<a href=#52 id=52 data-nosnippet>52</a>}
-<a href=#53 id=53 data-nosnippet>53</a><span class="doccomment">/// Contain `JValue` or `Box&lt;dyn Error&gt;`.
-<a href=#54 id=54 data-nosnippet>54</a></span><span class="kw">type </span>FResult = ErrOR&lt;JValue&gt;;
-<a href=#55 id=55 data-nosnippet>55</a><span class="doccomment">/// Information of Function.
-<a href=#56 id=56 data-nosnippet>56</a></span><span class="attr">#[derive(Debug, Clone, Default)]
-<a href=#57 id=57 data-nosnippet>57</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>FuncInfo {
-<a href=#58 id=58 data-nosnippet>58</a>  <span class="doccomment">/// Size of arguments.
-<a href=#59 id=59 data-nosnippet>59</a>  </span>args_slots: usize,
-<a href=#60 id=60 data-nosnippet>60</a>  <span class="doccomment">/// Body of function.
-<a href=#61 id=61 data-nosnippet>61</a>  </span>body: String,
-<a href=#62 id=62 data-nosnippet>62</a>  <span class="doccomment">/// Size of local variable.
-<a href=#63 id=63 data-nosnippet>63</a>  </span>local_size: usize,
-<a href=#64 id=64 data-nosnippet>64</a>  <span class="doccomment">/// Registers used.
-<a href=#65 id=65 data-nosnippet>65</a>  </span>reg_used: HashSet&lt;String&gt;,
-<a href=#66 id=66 data-nosnippet>66</a>}
-<a href=#67 id=67 data-nosnippet>67</a><span class="attr">#[expect(dead_code, reason = <span class="string">"todo"</span>)]
-<a href=#68 id=68 data-nosnippet>68</a></span><span class="kw">impl </span>FuncInfo {
-<a href=#69 id=69 data-nosnippet>69</a>  <span class="doccomment">/// Add local variable size (in bytes)
-<a href=#70 id=70 data-nosnippet>70</a>  </span><span class="kw">pub fn </span>add_local(<span class="kw-2">&amp;mut </span><span class="self">self</span>, size: usize) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str&gt; {
-<a href=#71 id=71 data-nosnippet>71</a>    <span class="self">self</span>.local_size = <span class="self">self</span>.local_size.checked_add(size).ok_or(<span class="string">"LocalSizeOverflowError"</span>)<span class="question-mark">?</span>;
-<a href=#72 id=72 data-nosnippet>72</a>    <span class="prelude-val">Ok</span>(())
-<a href=#73 id=73 data-nosnippet>73</a>  }
-<a href=#74 id=74 data-nosnippet>74</a>  <span class="doccomment">/// Calculate to allocate size.
-<a href=#75 id=75 data-nosnippet>75</a>  </span><span class="kw">pub fn </span>calc_alloc(<span class="kw-2">&amp;</span><span class="self">self</span>, align: usize) -&gt; ErrOR&lt;usize&gt; {
-<a href=#76 id=76 data-nosnippet>76</a>    <span class="kw">let </span>locals = <span class="self">self
-<a href=#77 id=77 data-nosnippet>77</a>      </span>.local_size
-<a href=#78 id=78 data-nosnippet>78</a>      .checked_add(<span class="self">self</span>.args_slots.checked_mul(<span class="number">8</span>).ok_or(<span class="string">"LocalSizeOverflowError"</span>)<span class="question-mark">?</span>)
-<a href=#79 id=79 data-nosnippet>79</a>      .ok_or(<span class="string">"LocalSizeOverflowError"</span>)<span class="question-mark">?
-<a href=#80 id=80 data-nosnippet>80</a>      </span>.checked_add(<span class="number">15</span>)
-<a href=#81 id=81 data-nosnippet>81</a>      .ok_or(<span class="string">"LocalSizeOverflowError"</span>)<span class="question-mark">?
-<a href=#82 id=82 data-nosnippet>82</a>      </span>&amp; !<span class="number">15</span>;
-<a href=#83 id=83 data-nosnippet>83</a>    <span class="kw">let </span>shadow_space = <span class="number">32</span>;
-<a href=#84 id=84 data-nosnippet>84</a>    locals
-<a href=#85 id=85 data-nosnippet>85</a>      .checked_add(shadow_space)
-<a href=#86 id=86 data-nosnippet>86</a>      .ok_or(<span class="string">"LocalSizeOverflowError"</span>)<span class="question-mark">?
-<a href=#87 id=87 data-nosnippet>87</a>      </span>.checked_add(align)
-<a href=#88 id=88 data-nosnippet>88</a>      .ok_or(<span class="string">"LocalSizeOverflowError"</span>.into())
-<a href=#89 id=89 data-nosnippet>89</a>  }
-<a href=#90 id=90 data-nosnippet>90</a>  <span class="doccomment">/// Update `args_slots` (only if size is larger)
-<a href=#91 id=91 data-nosnippet>91</a>  </span><span class="kw">pub fn </span>update_max(<span class="kw-2">&amp;mut </span><span class="self">self</span>, size: usize) {
-<a href=#92 id=92 data-nosnippet>92</a>    <span class="self">self</span>.args_slots = cmp::max(<span class="self">self</span>.args_slots, size);
-<a href=#93 id=93 data-nosnippet>93</a>  }
-<a href=#94 id=94 data-nosnippet>94</a>}
-<a href=#95 id=95 data-nosnippet>95</a><span class="doccomment">/// Type of built-in function.
-<a href=#96 id=96 data-nosnippet>96</a></span><span class="kw">type </span>JFunc = <span class="kw">fn</span>(<span class="kw-2">&amp;mut </span>Jsonpiler, <span class="kw-2">&amp;</span>Json, <span class="kw-2">&amp;</span>[Json], <span class="kw-2">&amp;mut </span>FuncInfo) -&gt; FResult;
-<a href=#97 id=97 data-nosnippet>97</a><span class="doccomment">/// Represents a JSON object with key-value pairs.
-<a href=#98 id=98 data-nosnippet>98</a></span><span class="attr">#[derive(Debug, Clone, Default)]
-<a href=#99 id=99 data-nosnippet>99</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>JObject {
-<a href=#100 id=100 data-nosnippet>100</a>  <span class="doccomment">/// Stores the key-value pairs in insertion order.
-<a href=#101 id=101 data-nosnippet>101</a>  </span>entries: Vec&lt;(String, Json)&gt;,
-<a href=#102 id=102 data-nosnippet>102</a>  <span class="doccomment">/// Maps keys to their index in the entries vector for quick lookup.
-<a href=#103 id=103 data-nosnippet>103</a>  </span>idx: HashMap&lt;String, usize&gt;,
-<a href=#104 id=104 data-nosnippet>104</a>}
-<a href=#105 id=105 data-nosnippet>105</a><span class="doccomment">/// Contain `Json` or `Box&lt;dyn Error&gt;`.
-<a href=#106 id=106 data-nosnippet>106</a></span><span class="kw">type </span>JResult = ErrOR&lt;Json&gt;;
-<a href=#107 id=107 data-nosnippet>107</a><span class="doccomment">/// Type and value information.
-<a href=#108 id=108 data-nosnippet>108</a></span><span class="attr">#[derive(Debug, Clone, Default)]
-<a href=#109 id=109 data-nosnippet>109</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">enum </span>JValue {
-<a href=#110 id=110 data-nosnippet>110</a>  <span class="doccomment">/// Function.
-<a href=#111 id=111 data-nosnippet>111</a>  </span>Function(AsmFunc),
-<a href=#112 id=112 data-nosnippet>112</a>  <span class="doccomment">/// Array.
-<a href=#113 id=113 data-nosnippet>113</a>  </span>LArray(Vec&lt;Json&gt;),
-<a href=#114 id=114 data-nosnippet>114</a>  <span class="doccomment">/// Bool.
-<a href=#115 id=115 data-nosnippet>115</a>  </span>LBool(bool),
-<a href=#116 id=116 data-nosnippet>116</a>  <span class="doccomment">/// Float.
-<a href=#117 id=117 data-nosnippet>117</a>  </span>LFloat(f64),
-<a href=#118 id=118 data-nosnippet>118</a>  <span class="doccomment">/// Integer.
-<a href=#119 id=119 data-nosnippet>119</a>  </span>LInt(i64),
-<a href=#120 id=120 data-nosnippet>120</a>  <span class="doccomment">/// Object.
-<a href=#121 id=121 data-nosnippet>121</a>  </span>LObject(JObject),
-<a href=#122 id=122 data-nosnippet>122</a>  <span class="doccomment">/// String.
-<a href=#123 id=123 data-nosnippet>123</a>  </span>LString(String),
-<a href=#124 id=124 data-nosnippet>124</a>  <span class="doccomment">/// Null.
-<a href=#125 id=125 data-nosnippet>125</a>  </span><span class="attr">#[default]
-<a href=#126 id=126 data-nosnippet>126</a>  </span>Null,
-<a href=#127 id=127 data-nosnippet>127</a>  <span class="doccomment">/// Array variable.
-<a href=#128 id=128 data-nosnippet>128</a>  </span><span class="attr">#[expect(dead_code, reason = <span class="string">"todo"</span>)]
-<a href=#129 id=129 data-nosnippet>129</a>  </span>VArray(String),
-<a href=#130 id=130 data-nosnippet>130</a>  <span class="doccomment">/// Bool variable.
-<a href=#131 id=131 data-nosnippet>131</a>  </span><span class="attr">#[expect(dead_code, reason = <span class="string">"todo"</span>)]
-<a href=#132 id=132 data-nosnippet>132</a>  </span>VBool(String, usize),
-<a href=#133 id=133 data-nosnippet>133</a>  <span class="doccomment">/// Float variable.
-<a href=#134 id=134 data-nosnippet>134</a>  </span><span class="attr">#[expect(dead_code, reason = <span class="string">"todo"</span>)]
-<a href=#135 id=135 data-nosnippet>135</a>  </span>VFloat(String),
-<a href=#136 id=136 data-nosnippet>136</a>  <span class="doccomment">/// Integer variable.
-<a href=#137 id=137 data-nosnippet>137</a>  </span>VInt(String),
-<a href=#138 id=138 data-nosnippet>138</a>  <span class="doccomment">/// Object variable.
-<a href=#139 id=139 data-nosnippet>139</a>  </span><span class="attr">#[expect(dead_code, reason = <span class="string">"todo"</span>)]
-<a href=#140 id=140 data-nosnippet>140</a>  </span>VObject(String),
-<a href=#141 id=141 data-nosnippet>141</a>  <span class="doccomment">/// String variable.
-<a href=#142 id=142 data-nosnippet>142</a>  </span>VString(String),
-<a href=#143 id=143 data-nosnippet>143</a>}
-<a href=#144 id=144 data-nosnippet>144</a><span class="doccomment">/// Json object.
-<a href=#145 id=145 data-nosnippet>145</a></span><span class="attr">#[derive(Debug, Clone, Default)]
-<a href=#146 id=146 data-nosnippet>146</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>Json {
-<a href=#147 id=147 data-nosnippet>147</a>  <span class="doccomment">/// Line number of objects in the source code.
-<a href=#148 id=148 data-nosnippet>148</a>  </span>info: ErrorInfo,
-<a href=#149 id=149 data-nosnippet>149</a>  <span class="doccomment">/// Type and value information.
-<a href=#150 id=150 data-nosnippet>150</a>  </span>value: JValue,
-<a href=#151 id=151 data-nosnippet>151</a>}
-<a href=#152 id=152 data-nosnippet>152</a><span class="doccomment">/// Parser and compiler.
-<a href=#153 id=153 data-nosnippet>153</a></span><span class="attr">#[derive(Debug, Clone, Default)]
-<a href=#154 id=154 data-nosnippet>154</a></span><span class="kw">pub struct </span>Jsonpiler {
-<a href=#155 id=155 data-nosnippet>155</a>  <span class="doccomment">/// Built-in function table.
-<a href=#156 id=156 data-nosnippet>156</a>  </span>f_table: HashMap&lt;String, BuiltinFunc&gt;,
-<a href=#157 id=157 data-nosnippet>157</a>  <span class="doccomment">/// Flag to avoid including the same file twice.
-<a href=#158 id=158 data-nosnippet>158</a>  </span>include_flag: HashSet&lt;String&gt;,
-<a href=#159 id=159 data-nosnippet>159</a>  <span class="doccomment">/// index of `indices`
-<a href=#160 id=160 data-nosnippet>160</a>  </span>index: usize,
-<a href=#161 id=161 data-nosnippet>161</a>  <span class="doccomment">/// Character indices.
-<a href=#162 id=162 data-nosnippet>162</a>  </span>indices: Vec&lt;(usize, char)&gt;,
-<a href=#163 id=163 data-nosnippet>163</a>  <span class="doccomment">/// Information to be used during parsing.
-<a href=#164 id=164 data-nosnippet>164</a>  </span>info: ErrorInfo,
-<a href=#165 id=165 data-nosnippet>165</a>  <span class="doccomment">/// Section of the assembly.
-<a href=#166 id=166 data-nosnippet>166</a>  </span>sect: Section,
-<a href=#167 id=167 data-nosnippet>167</a>  <span class="doccomment">/// Source code.
-<a href=#168 id=168 data-nosnippet>168</a>  </span>source: String,
-<a href=#169 id=169 data-nosnippet>169</a>  <span class="doccomment">/// Seed to generate names.
-<a href=#170 id=170 data-nosnippet>170</a>  </span>symbol_seeds: HashMap&lt;String, usize&gt;,
-<a href=#171 id=171 data-nosnippet>171</a>  <span class="doccomment">/// Variable table.
-<a href=#172 id=172 data-nosnippet>172</a>  </span>vars: Vec&lt;HashMap&lt;String, JValue&gt;&gt;,
-<a href=#173 id=173 data-nosnippet>173</a>}
-<a href=#174 id=174 data-nosnippet>174</a><span class="kw">impl </span>Jsonpiler {
-<a href=#175 id=175 data-nosnippet>175</a>  <span class="doccomment">/// Format error.
-<a href=#176 id=176 data-nosnippet>176</a>  </span><span class="attr">#[must_use]
-<a href=#177 id=177 data-nosnippet>177</a>  </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>fmt_err(<span class="kw-2">&amp;</span><span class="self">self</span>, err: <span class="kw-2">&amp;</span>str, info: <span class="kw-2">&amp;</span>ErrorInfo) -&gt; String {
-<a href=#178 id=178 data-nosnippet>178</a>    <span class="kw">const </span>MSG1: <span class="kw-2">&amp;</span>str = <span class="string">"\nError occurred on line: "</span>;
-<a href=#179 id=179 data-nosnippet>179</a>    <span class="kw">const </span>MSG2: <span class="kw-2">&amp;</span>str = <span class="string">"\nError position:\n"</span>;
-<a href=#180 id=180 data-nosnippet>180</a>    <span class="kw">if </span><span class="self">self</span>.source.is_empty() {
-<a href=#181 id=181 data-nosnippet>181</a>      <span class="kw">return </span><span class="macro">format!</span>(<span class="string">"{err}{MSG1}{}{MSG2}Error: Empty input"</span>, info.line);
-<a href=#182 id=182 data-nosnippet>182</a>    }
-<a href=#183 id=183 data-nosnippet>183</a>    <span class="kw">let </span>len = <span class="self">self</span>.source.len();
-<a href=#184 id=184 data-nosnippet>184</a>    <span class="kw">let </span>line = info.line;
-<a href=#185 id=185 data-nosnippet>185</a>    <span class="kw">let </span>idx = info.pos.min(len.saturating_sub(<span class="number">1</span>));
-<a href=#186 id=186 data-nosnippet>186</a>    <span class="kw">let </span>start = <span class="kw">if </span>idx == <span class="number">0 </span>{
-<a href=#187 id=187 data-nosnippet>187</a>      <span class="number">0
-<a href=#188 id=188 data-nosnippet>188</a>    </span>} <span class="kw">else </span>{
-<a href=#189 id=189 data-nosnippet>189</a>      <span class="kw">let </span><span class="prelude-val">Some</span>(left) = <span class="self">self</span>.source.get(..idx) <span class="kw">else </span>{
-<a href=#190 id=190 data-nosnippet>190</a>        <span class="kw">return </span><span class="macro">format!</span>(<span class="string">"{err}{MSG1}{line}{MSG2}Error: Failed to get substring"</span>);
-<a href=#191 id=191 data-nosnippet>191</a>      };
-<a href=#192 id=192 data-nosnippet>192</a>      <span class="kw">match </span>left.rfind(<span class="string">'\n'</span>) {
-<a href=#193 id=193 data-nosnippet>193</a>        <span class="prelude-val">None </span>=&gt; <span class="number">0</span>,
-<a href=#194 id=194 data-nosnippet>194</a>        <span class="prelude-val">Some</span>(start_pos) =&gt; {
-<a href=#195 id=195 data-nosnippet>195</a>          <span class="kw">let </span><span class="prelude-val">Some</span>(res) = start_pos.checked_add(<span class="number">1</span>) <span class="kw">else </span>{
-<a href=#196 id=196 data-nosnippet>196</a>            <span class="kw">return </span><span class="macro">format!</span>(<span class="string">"{err}{MSG1}{line}{MSG2}Error: Overflow"</span>);
-<a href=#197 id=197 data-nosnippet>197</a>          };
-<a href=#198 id=198 data-nosnippet>198</a>          res
-<a href=#199 id=199 data-nosnippet>199</a>        }
-<a href=#200 id=200 data-nosnippet>200</a>      }
-<a href=#201 id=201 data-nosnippet>201</a>    };
-<a href=#202 id=202 data-nosnippet>202</a>    <span class="kw">let </span><span class="prelude-val">Some</span>(right) = <span class="self">self</span>.source.get(idx..) <span class="kw">else </span>{
-<a href=#203 id=203 data-nosnippet>203</a>      <span class="kw">return </span><span class="macro">format!</span>(<span class="string">"{err}{MSG1}{line}{MSG2}Error: Failed to get substring"</span>);
-<a href=#204 id=204 data-nosnippet>204</a>    };
-<a href=#205 id=205 data-nosnippet>205</a>    <span class="kw">let </span>end = <span class="kw">match </span>right.find(<span class="string">'\n'</span>) {
-<a href=#206 id=206 data-nosnippet>206</a>      <span class="prelude-val">None </span>=&gt; len,
-<a href=#207 id=207 data-nosnippet>207</a>      <span class="prelude-val">Some</span>(end_pos) =&gt; {
-<a href=#208 id=208 data-nosnippet>208</a>        <span class="kw">let </span><span class="prelude-val">Some</span>(res) = idx.checked_add(end_pos) <span class="kw">else </span>{
-<a href=#209 id=209 data-nosnippet>209</a>          <span class="kw">return </span><span class="macro">format!</span>(<span class="string">"{err}{MSG1}{line}{MSG2}Error: Overflow"</span>);
-<a href=#210 id=210 data-nosnippet>210</a>        };
-<a href=#211 id=211 data-nosnippet>211</a>        res
-<a href=#212 id=212 data-nosnippet>212</a>      }
-<a href=#213 id=213 data-nosnippet>213</a>    };
-<a href=#214 id=214 data-nosnippet>214</a>    <span class="kw">let </span>ws = <span class="string">" "</span>.repeat(idx.saturating_sub(start));
-<a href=#215 id=215 data-nosnippet>215</a>    <span class="kw">let </span><span class="prelude-val">Some</span>(result) = <span class="self">self</span>.source.get(start..end) <span class="kw">else </span>{
-<a href=#216 id=216 data-nosnippet>216</a>      <span class="kw">return </span><span class="macro">format!</span>(<span class="string">"{err}{MSG1}{line}{MSG2}Error: Failed to get substring"</span>);
-<a href=#217 id=217 data-nosnippet>217</a>    };
-<a href=#218 id=218 data-nosnippet>218</a>    <span class="macro">format!</span>(<span class="string">"{err}{MSG1}{line}{MSG2}{result}\n{ws}^"</span>)
-<a href=#219 id=219 data-nosnippet>219</a>  }
-<a href=#220 id=220 data-nosnippet>220</a>}
-<a href=#221 id=221 data-nosnippet>221</a><span class="doccomment">/// Section of the assembly.
-<a href=#222 id=222 data-nosnippet>222</a></span><span class="attr">#[derive(Debug, Clone, Default)]
-<a href=#223 id=223 data-nosnippet>223</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>Section {
-<a href=#224 id=224 data-nosnippet>224</a>  <span class="doccomment">/// Buffer to store the contents of the bss section of the assembly.
-<a href=#225 id=225 data-nosnippet>225</a>  </span>bss: String,
-<a href=#226 id=226 data-nosnippet>226</a>  <span class="doccomment">/// Buffer to store the contents of the data section of the assembly.
-<a href=#227 id=227 data-nosnippet>227</a>  </span>data: String,
-<a href=#228 id=228 data-nosnippet>228</a>  <span class="doccomment">/// Buffer to store the contents of the text section of the assembly.
-<a href=#229 id=229 data-nosnippet>229</a>  </span>text: String,
-<a href=#230 id=230 data-nosnippet>230</a>}
-<a href=#231 id=231 data-nosnippet>231</a><span class="doccomment">/// Compiles and executes a JSON-based program using the Jsonpiler.
-<a href=#232 id=232 data-nosnippet>232</a>/// This function performs the following steps:
-<a href=#233 id=233 data-nosnippet>233</a>/// 1. Parses the first CLI argument as the input JSON file path.
-<a href=#234 id=234 data-nosnippet>234</a>/// 2. Reads the file content into a string.
-<a href=#235 id=235 data-nosnippet>235</a>/// 3. Parses the string into a `Json` structure.
-<a href=#236 id=236 data-nosnippet>236</a>/// 4. Compiles the structure into assembly code.
-<a href=#237 id=237 data-nosnippet>237</a>/// 5. Assembles it into an `.obj` file.
-<a href=#238 id=238 data-nosnippet>238</a>/// 6. Links it into an `.exe`.
-<a href=#239 id=239 data-nosnippet>239</a>/// 7. Executes the resulting binary.
-<a href=#240 id=240 data-nosnippet>240</a>/// 8. Returns its exit code.
-<a href=#241 id=241 data-nosnippet>241</a>/// # Panics
-<a href=#242 id=242 data-nosnippet>242</a>/// This function will panic if:
-<a href=#243 id=243 data-nosnippet>243</a>/// - The platform is not Windows.
-<a href=#244 id=244 data-nosnippet>244</a>/// - CLI arguments are invalid.
-<a href=#245 id=245 data-nosnippet>245</a>/// - File reading, parsing, compilation, assembling, linking, or execution fails.
-<a href=#246 id=246 data-nosnippet>246</a>/// - The working directory or executable filename is invalid.
-<a href=#247 id=247 data-nosnippet>247</a>/// # Requirements
-<a href=#248 id=248 data-nosnippet>248</a>/// - `as` and `ld` must be available in the system PATH.
-<a href=#249 id=249 data-nosnippet>249</a>/// - On failure, exits with code 1 using `error_exit`.
-<a href=#250 id=250 data-nosnippet>250</a>/// # Example
-<a href=#251 id=251 data-nosnippet>251</a>/// ```sh
-<a href=#252 id=252 data-nosnippet>252</a>/// ./jsonpiler test.json
-<a href=#253 id=253 data-nosnippet>253</a>/// ```
-<a href=#254 id=254 data-nosnippet>254</a>/// # Platform
-<a href=#255 id=255 data-nosnippet>255</a>/// Windows only.
-<a href=#256 id=256 data-nosnippet>256</a></span><span class="attr">#[inline]
-<a href=#257 id=257 data-nosnippet>257</a>#[must_use]
-<a href=#258 id=258 data-nosnippet>258</a>#[expect(clippy::print_stderr, reason = <span class="string">"User-facing diagnostics"</span>)]
-<a href=#259 id=259 data-nosnippet>259</a></span><span class="kw">pub fn </span>run() -&gt; ExitCode {
-<a href=#260 id=260 data-nosnippet>260</a>  <span class="attr">#[cfg(all(not(doc), not(target_os = <span class="string">"windows"</span>)))]
-<a href=#261 id=261 data-nosnippet>261</a>  </span><span class="macro">compile_error!</span>(<span class="string">"This program is supported on Windows only."</span>);
-<a href=#262 id=262 data-nosnippet>262</a>  <span class="kw">let </span>args: Vec&lt;String&gt; = env::args().collect();
-<a href=#263 id=263 data-nosnippet>263</a>  <span class="kw">let </span><span class="prelude-val">Some</span>(program_name) = args.first() <span class="kw">else </span>{
-<a href=#264 id=264 data-nosnippet>264</a>    <span class="macro">eprintln!</span>(<span class="string">"Failed to get the program name."</span>);
-<a href=#265 id=265 data-nosnippet>265</a>    <span class="kw">return </span>ExitCode::FAILURE;
-<a href=#266 id=266 data-nosnippet>266</a>  };
-<a href=#267 id=267 data-nosnippet>267</a>  <span class="kw">let </span><span class="prelude-val">Some</span>(input_file) = args.get(<span class="number">1</span>) <span class="kw">else </span>{
-<a href=#268 id=268 data-nosnippet>268</a>    <span class="macro">eprintln!</span>(<span class="string">"Usage: {program_name} &lt;input_json_file&gt; [args for .exe]"</span>);
-<a href=#269 id=269 data-nosnippet>269</a>    <span class="kw">return </span>ExitCode::FAILURE;
-<a href=#270 id=270 data-nosnippet>270</a>  };
-<a href=#271 id=271 data-nosnippet>271</a>  <span class="kw">let </span>source = <span class="kw">match </span>fs::read_to_string(input_file) {
-<a href=#272 id=272 data-nosnippet>272</a>    <span class="prelude-val">Ok</span>(content) =&gt; content,
-<a href=#273 id=273 data-nosnippet>273</a>    <span class="prelude-val">Err</span>(err) =&gt; {
-<a href=#274 id=274 data-nosnippet>274</a>      <span class="macro">eprintln!</span>(<span class="string">"Failed to read `{input_file}`: {err}"</span>);
-<a href=#275 id=275 data-nosnippet>275</a>      <span class="kw">return </span>ExitCode::FAILURE;
-<a href=#276 id=276 data-nosnippet>276</a>    }
-<a href=#277 id=277 data-nosnippet>277</a>  };
-<a href=#278 id=278 data-nosnippet>278</a>  <span class="kw">let </span><span class="kw-2">mut </span>jsonpiler = Jsonpiler::default();
-<a href=#279 id=279 data-nosnippet>279</a>  <span class="kw">let </span>file = Path::new(input_file);
-<a href=#280 id=280 data-nosnippet>280</a>  <span class="kw">let </span>asm = file.with_extension(<span class="string">"s"</span>).to_string_lossy().to_string();
-<a href=#281 id=281 data-nosnippet>281</a>  <span class="kw">let </span>obj = file.with_extension(<span class="string">"obj"</span>).to_string_lossy().to_string();
-<a href=#282 id=282 data-nosnippet>282</a>  <span class="kw">let </span>exe = file.with_extension(<span class="string">"exe"</span>).to_string_lossy().to_string();
-<a href=#283 id=283 data-nosnippet>283</a>  <span class="kw">if let </span><span class="prelude-val">Err</span>(err) = jsonpiler.build(source, input_file, <span class="kw-2">&amp;</span>asm) {
-<a href=#284 id=284 data-nosnippet>284</a>    <span class="macro">eprintln!</span>(<span class="string">"Compilation error: {err}"</span>);
-<a href=#285 id=285 data-nosnippet>285</a>    <span class="kw">return </span>ExitCode::FAILURE;
-<a href=#286 id=286 data-nosnippet>286</a>  }
-<a href=#287 id=287 data-nosnippet>287</a>  <span class="kw">match </span>Command::new(<span class="string">"as"</span>).args([<span class="kw-2">&amp;</span>asm, <span class="string">"-o"</span>, <span class="kw-2">&amp;</span>obj]).status() {
-<a href=#288 id=288 data-nosnippet>288</a>    <span class="prelude-val">Ok</span>(status) <span class="kw">if </span>status.success() =&gt; status,
-<a href=#289 id=289 data-nosnippet>289</a>    <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; {
-<a href=#290 id=290 data-nosnippet>290</a>      <span class="macro">eprintln!</span>(<span class="string">"Assembler returned a non-zero exit status."</span>);
-<a href=#291 id=291 data-nosnippet>291</a>      <span class="kw">return </span>ExitCode::FAILURE;
-<a href=#292 id=292 data-nosnippet>292</a>    }
-<a href=#293 id=293 data-nosnippet>293</a>    <span class="prelude-val">Err</span>(err) =&gt; {
-<a href=#294 id=294 data-nosnippet>294</a>      <span class="macro">eprintln!</span>(<span class="string">"Failed to invoke assembler: {err}"</span>);
-<a href=#295 id=295 data-nosnippet>295</a>      <span class="kw">return </span>ExitCode::FAILURE;
-<a href=#296 id=296 data-nosnippet>296</a>    }
-<a href=#297 id=297 data-nosnippet>297</a>  };
-<a href=#298 id=298 data-nosnippet>298</a>  <span class="attr">#[cfg(not(debug_assertions))]
-<a href=#299 id=299 data-nosnippet>299</a>  </span><span class="kw">if let </span><span class="prelude-val">Err</span>(err) = fs::remove_file(<span class="kw-2">&amp;</span>asm) {
-<a href=#300 id=300 data-nosnippet>300</a>    <span class="macro">eprintln!</span>(<span class="string">"Failed to delete `{asm}`: {err}"</span>);
-<a href=#301 id=301 data-nosnippet>301</a>    <span class="kw">return </span>ExitCode::FAILURE;
-<a href=#302 id=302 data-nosnippet>302</a>  }
-<a href=#303 id=303 data-nosnippet>303</a>  <span class="kw">match </span>Command::new(<span class="string">"ld"</span>)
-<a href=#304 id=304 data-nosnippet>304</a>    .args([
-<a href=#305 id=305 data-nosnippet>305</a>      <span class="kw-2">&amp;</span>obj,
-<a href=#306 id=306 data-nosnippet>306</a>      <span class="string">"-o"</span>,
-<a href=#307 id=307 data-nosnippet>307</a>      <span class="kw-2">&amp;</span>exe,
-<a href=#308 id=308 data-nosnippet>308</a>      <span class="string">"-LC:/Windows/System32"</span>,
-<a href=#309 id=309 data-nosnippet>309</a>      <span class="string">"-luser32"</span>,
-<a href=#310 id=310 data-nosnippet>310</a>      <span class="string">"-lkernel32"</span>,
-<a href=#311 id=311 data-nosnippet>311</a>      <span class="string">"-lucrtbase"</span>,
-<a href=#312 id=312 data-nosnippet>312</a>      <span class="string">"--gc-sections"</span>,
-<a href=#313 id=313 data-nosnippet>313</a>      <span class="string">"-e_start"</span>,
-<a href=#314 id=314 data-nosnippet>314</a>    ])
-<a href=#315 id=315 data-nosnippet>315</a>    .status()
-<a href=#316 id=316 data-nosnippet>316</a>  {
-<a href=#317 id=317 data-nosnippet>317</a>    <span class="prelude-val">Ok</span>(status) <span class="kw">if </span>status.success() =&gt; status,
-<a href=#318 id=318 data-nosnippet>318</a>    <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; {
-<a href=#319 id=319 data-nosnippet>319</a>      <span class="macro">eprintln!</span>(<span class="string">"Linker returned a non-zero exit status."</span>);
-<a href=#320 id=320 data-nosnippet>320</a>      <span class="kw">return </span>ExitCode::FAILURE;
-<a href=#321 id=321 data-nosnippet>321</a>    }
-<a href=#322 id=322 data-nosnippet>322</a>    <span class="prelude-val">Err</span>(err) =&gt; {
-<a href=#323 id=323 data-nosnippet>323</a>      <span class="macro">eprintln!</span>(<span class="string">"Failed to invoke linker: {err}"</span>);
-<a href=#324 id=324 data-nosnippet>324</a>      <span class="kw">return </span>ExitCode::FAILURE;
-<a href=#325 id=325 data-nosnippet>325</a>    }
-<a href=#326 id=326 data-nosnippet>326</a>  };
-<a href=#327 id=327 data-nosnippet>327</a>  <span class="kw">if let </span><span class="prelude-val">Err</span>(err) = fs::remove_file(<span class="kw-2">&amp;</span>obj) {
-<a href=#328 id=328 data-nosnippet>328</a>    <span class="macro">eprintln!</span>(<span class="string">"Failed to delete `{obj}`: {err}"</span>);
-<a href=#329 id=329 data-nosnippet>329</a>    <span class="kw">return </span>ExitCode::FAILURE;
-<a href=#330 id=330 data-nosnippet>330</a>  }
-<a href=#331 id=331 data-nosnippet>331</a>  <span class="kw">let </span>cwd = <span class="kw">match </span>env::current_dir() {
-<a href=#332 id=332 data-nosnippet>332</a>    <span class="prelude-val">Ok</span>(dir) =&gt; dir,
-<a href=#333 id=333 data-nosnippet>333</a>    <span class="prelude-val">Err</span>(err) =&gt; {
-<a href=#334 id=334 data-nosnippet>334</a>      <span class="macro">eprintln!</span>(<span class="string">"Failed to get current directory: {err}"</span>);
-<a href=#335 id=335 data-nosnippet>335</a>      <span class="kw">return </span>ExitCode::FAILURE;
-<a href=#336 id=336 data-nosnippet>336</a>    }
-<a href=#337 id=337 data-nosnippet>337</a>  }
-<a href=#338 id=338 data-nosnippet>338</a>  .join(<span class="kw-2">&amp;</span>exe);
-<a href=#339 id=339 data-nosnippet>339</a>  <span class="kw">let </span>exe_status = <span class="kw">match </span>Command::new(cwd).args(args.get(<span class="number">2</span>..).unwrap_or(<span class="kw-2">&amp;</span>[])).status() {
-<a href=#340 id=340 data-nosnippet>340</a>    <span class="prelude-val">Ok</span>(status) =&gt; status,
-<a href=#341 id=341 data-nosnippet>341</a>    <span class="prelude-val">Err</span>(err) =&gt; {
-<a href=#342 id=342 data-nosnippet>342</a>      <span class="macro">eprintln!</span>(<span class="string">"Failed to execute compiled program: {err}"</span>);
-<a href=#343 id=343 data-nosnippet>343</a>      <span class="kw">return </span>ExitCode::FAILURE;
-<a href=#344 id=344 data-nosnippet>344</a>    }
-<a href=#345 id=345 data-nosnippet>345</a>  };
-<a href=#346 id=346 data-nosnippet>346</a>  <span class="kw">let </span><span class="prelude-val">Some</span>(exit_code) = exe_status.code() <span class="kw">else </span>{
-<a href=#347 id=347 data-nosnippet>347</a>    <span class="macro">eprintln!</span>(<span class="string">"Could not retrieve the child process's exit code."</span>);
-<a href=#348 id=348 data-nosnippet>348</a>    <span class="kw">return </span>ExitCode::FAILURE;
-<a href=#349 id=349 data-nosnippet>349</a>  };
-<a href=#350 id=350 data-nosnippet>350</a>  <span class="kw">if let </span><span class="prelude-val">Ok</span>(code) = u8::try_from(exit_code.rem_euclid(<span class="number">256</span>)) {
-<a href=#351 id=351 data-nosnippet>351</a>    ExitCode::from(code)
-<a href=#352 id=352 data-nosnippet>352</a>  } <span class="kw">else </span>{
-<a href=#353 id=353 data-nosnippet>353</a>    <span class="macro">eprintln!</span>(<span class="string">"Internal error: Unexpected failure in exit code conversion."</span>);
-<a href=#354 id=354 data-nosnippet>354</a>    ExitCode::FAILURE
-<a href=#355 id=355 data-nosnippet>355</a>  }
-<a href=#356 id=356 data-nosnippet>356</a>}</code></pre></div></section></main></body></html>
+<a href=#23 id=23 data-nosnippet>23</a><span class="doccomment">/// Return `ExitCode`.
+<a href=#24 id=24 data-nosnippet>24</a></span><span class="macro">macro_rules!</span> exit {($(<span class="macro-nonterminal">$arg</span>: tt)<span class="kw-2">*</span>) =&gt;{{<span class="macro">eprintln!</span>($(<span class="macro-nonterminal">$arg</span>)<span class="kw-2">*</span>);<span class="kw">return </span>ExitCode::FAILURE;}}}
+<a href=#25 id=25 data-nosnippet>25</a>
+<a href=#26 id=26 data-nosnippet>26</a><span class="attr">#[derive(Debug, Clone)]
+<a href=#27 id=27 data-nosnippet>27</a></span><span class="doccomment">/// Assembly function representation.
+<a href=#28 id=28 data-nosnippet>28</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>AsmFunc {
+<a href=#29 id=29 data-nosnippet>29</a>  <span class="doccomment">/// Name of function.
+<a href=#30 id=30 data-nosnippet>30</a>  </span><span class="kw">pub </span>name: String,
+<a href=#31 id=31 data-nosnippet>31</a>  <span class="doccomment">/// Parameters of function.
+<a href=#32 id=32 data-nosnippet>32</a>  </span><span class="kw">pub </span>params: Vec&lt;Json&gt;,
+<a href=#33 id=33 data-nosnippet>33</a>  <span class="doccomment">/// Return type of function.
+<a href=#34 id=34 data-nosnippet>34</a>  </span><span class="kw">pub </span>ret: Box&lt;JValue&gt;,
+<a href=#35 id=35 data-nosnippet>35</a>}
+<a href=#36 id=36 data-nosnippet>36</a><span class="doccomment">/// Built-in function.
+<a href=#37 id=37 data-nosnippet>37</a></span><span class="attr">#[derive(Debug, Clone)]
+<a href=#38 id=38 data-nosnippet>38</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>BuiltinFunc {
+<a href=#39 id=39 data-nosnippet>39</a>  <span class="doccomment">/// Should arguments already be evaluated.
+<a href=#40 id=40 data-nosnippet>40</a>  </span><span class="kw">pub </span>do_not_eval: bool,
+<a href=#41 id=41 data-nosnippet>41</a>  <span class="doccomment">/// Pointer of function.
+<a href=#42 id=42 data-nosnippet>42</a>  </span><span class="kw">pub </span>func: JFunc,
+<a href=#43 id=43 data-nosnippet>43</a>  <span class="doccomment">/// If it is true, function introduces a new scope.
+<a href=#44 id=44 data-nosnippet>44</a>  </span><span class="kw">pub </span>scoped: bool,
+<a href=#45 id=45 data-nosnippet>45</a>}
+<a href=#46 id=46 data-nosnippet>46</a><span class="kw">type </span>ErrOR&lt;T&gt; = <span class="prelude-ty">Result</span>&lt;T, Box&lt;<span class="kw">dyn </span>Error&gt;&gt;;
+<a href=#47 id=47 data-nosnippet>47</a><span class="doccomment">/// line and pos in source code.
+<a href=#48 id=48 data-nosnippet>48</a></span><span class="attr">#[derive(Debug, Clone, Default)]
+<a href=#49 id=49 data-nosnippet>49</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>ErrorInfo {
+<a href=#50 id=50 data-nosnippet>50</a>  <span class="doccomment">/// Line number of the part being parsed.
+<a href=#51 id=51 data-nosnippet>51</a>  </span>line: usize,
+<a href=#52 id=52 data-nosnippet>52</a>  <span class="doccomment">/// Location of the part being parsed.
+<a href=#53 id=53 data-nosnippet>53</a>  </span>pos: usize,
+<a href=#54 id=54 data-nosnippet>54</a>}
+<a href=#55 id=55 data-nosnippet>55</a><span class="doccomment">/// Contain `JValue` or `Box&lt;dyn Error&gt;`.
+<a href=#56 id=56 data-nosnippet>56</a></span><span class="kw">type </span>FResult = ErrOR&lt;JValue&gt;;
+<a href=#57 id=57 data-nosnippet>57</a><span class="doccomment">/// Information of Function.
+<a href=#58 id=58 data-nosnippet>58</a></span><span class="attr">#[derive(Debug, Clone, Default)]
+<a href=#59 id=59 data-nosnippet>59</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>FuncInfo {
+<a href=#60 id=60 data-nosnippet>60</a>  <span class="doccomment">/// Size of arguments.
+<a href=#61 id=61 data-nosnippet>61</a>  </span>args_slots: usize,
+<a href=#62 id=62 data-nosnippet>62</a>  <span class="doccomment">/// Body of function.
+<a href=#63 id=63 data-nosnippet>63</a>  </span>body: Vec&lt;String&gt;,
+<a href=#64 id=64 data-nosnippet>64</a>  <span class="doccomment">/// Size of local variable.
+<a href=#65 id=65 data-nosnippet>65</a>  </span>local_size: usize,
+<a href=#66 id=66 data-nosnippet>66</a>  <span class="doccomment">/// Registers used.
+<a href=#67 id=67 data-nosnippet>67</a>  </span>reg_used: HashSet&lt;String&gt;,
+<a href=#68 id=68 data-nosnippet>68</a>}
+<a href=#69 id=69 data-nosnippet>69</a><span class="attr">#[expect(dead_code, reason = <span class="string">"todo"</span>)]
+<a href=#70 id=70 data-nosnippet>70</a></span><span class="kw">impl </span>FuncInfo {
+<a href=#71 id=71 data-nosnippet>71</a>  <span class="doccomment">/// Add local variable size (in bytes)
+<a href=#72 id=72 data-nosnippet>72</a>  </span><span class="kw">pub fn </span>add_local(<span class="kw-2">&amp;mut </span><span class="self">self</span>, size: usize) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str&gt; {
+<a href=#73 id=73 data-nosnippet>73</a>    <span class="self">self</span>.local_size = <span class="self">self</span>.local_size.checked_add(size).ok_or(<span class="string">"LocalSize Overflow"</span>)<span class="question-mark">?</span>;
+<a href=#74 id=74 data-nosnippet>74</a>    <span class="prelude-val">Ok</span>(())
+<a href=#75 id=75 data-nosnippet>75</a>  }
+<a href=#76 id=76 data-nosnippet>76</a>  <span class="doccomment">/// Calculate to allocate size.
+<a href=#77 id=77 data-nosnippet>77</a>  </span><span class="kw">pub fn </span>calc_alloc(<span class="kw-2">&amp;</span><span class="self">self</span>, align: usize) -&gt; ErrOR&lt;usize&gt; {
+<a href=#78 id=78 data-nosnippet>78</a>    <span class="kw">let </span>locals = <span class="self">self
+<a href=#79 id=79 data-nosnippet>79</a>      </span>.local_size
+<a href=#80 id=80 data-nosnippet>80</a>      .checked_add(<span class="self">self</span>.args_slots.checked_mul(<span class="number">8</span>).ok_or(<span class="string">"LocalSize Overflow"</span>)<span class="question-mark">?</span>)
+<a href=#81 id=81 data-nosnippet>81</a>      .ok_or(<span class="string">"LocalSize Overflow"</span>)<span class="question-mark">?
+<a href=#82 id=82 data-nosnippet>82</a>      </span>.checked_add(<span class="number">15</span>)
+<a href=#83 id=83 data-nosnippet>83</a>      .ok_or(<span class="string">"LocalSize Overflow"</span>)<span class="question-mark">?
+<a href=#84 id=84 data-nosnippet>84</a>      </span>&amp; !<span class="number">15</span>;
+<a href=#85 id=85 data-nosnippet>85</a>    <span class="kw">let </span>shadow_space = <span class="number">32</span>;
+<a href=#86 id=86 data-nosnippet>86</a>    locals
+<a href=#87 id=87 data-nosnippet>87</a>      .checked_add(shadow_space)
+<a href=#88 id=88 data-nosnippet>88</a>      .ok_or(<span class="string">"LocalSize Overflow"</span>)<span class="question-mark">?
+<a href=#89 id=89 data-nosnippet>89</a>      </span>.checked_add(align)
+<a href=#90 id=90 data-nosnippet>90</a>      .ok_or(<span class="string">"LocalSize Overflow"</span>.into())
+<a href=#91 id=91 data-nosnippet>91</a>  }
+<a href=#92 id=92 data-nosnippet>92</a>  <span class="doccomment">/// Update `args_slots` (only if size is larger)
+<a href=#93 id=93 data-nosnippet>93</a>  </span><span class="kw">pub fn </span>update_max(<span class="kw-2">&amp;mut </span><span class="self">self</span>, size: usize) {
+<a href=#94 id=94 data-nosnippet>94</a>    <span class="self">self</span>.args_slots = cmp::max(<span class="self">self</span>.args_slots, size);
+<a href=#95 id=95 data-nosnippet>95</a>  }
+<a href=#96 id=96 data-nosnippet>96</a>}
+<a href=#97 id=97 data-nosnippet>97</a><span class="doccomment">/// Type of built-in function.
+<a href=#98 id=98 data-nosnippet>98</a></span><span class="kw">type </span>JFunc = <span class="kw">fn</span>(<span class="kw-2">&amp;mut </span>Jsonpiler, <span class="kw-2">&amp;</span>Json, <span class="kw-2">&amp;</span>[Json], <span class="kw-2">&amp;mut </span>FuncInfo) -&gt; FResult;
+<a href=#99 id=99 data-nosnippet>99</a><span class="doccomment">/// Represents a JSON object with key-value pairs.
+<a href=#100 id=100 data-nosnippet>100</a></span><span class="attr">#[derive(Debug, Clone, Default)]
+<a href=#101 id=101 data-nosnippet>101</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>JObject {
+<a href=#102 id=102 data-nosnippet>102</a>  <span class="doccomment">/// Stores the key-value pairs in insertion order.
+<a href=#103 id=103 data-nosnippet>103</a>  </span>entries: Vec&lt;(String, Json)&gt;,
+<a href=#104 id=104 data-nosnippet>104</a>  <span class="doccomment">/// Maps keys to their index in the entries vector for quick lookup.
+<a href=#105 id=105 data-nosnippet>105</a>  </span>idx: HashMap&lt;String, usize&gt;,
+<a href=#106 id=106 data-nosnippet>106</a>}
+<a href=#107 id=107 data-nosnippet>107</a><span class="doccomment">/// Contain `Json` or `Box&lt;dyn Error&gt;`.
+<a href=#108 id=108 data-nosnippet>108</a></span><span class="kw">type </span>JResult = ErrOR&lt;Json&gt;;
+<a href=#109 id=109 data-nosnippet>109</a><span class="doccomment">/// Type and value information.
+<a href=#110 id=110 data-nosnippet>110</a></span><span class="attr">#[derive(Debug, Clone, Default)]
+<a href=#111 id=111 data-nosnippet>111</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">enum </span>JValue {
+<a href=#112 id=112 data-nosnippet>112</a>  <span class="doccomment">/// Function.
+<a href=#113 id=113 data-nosnippet>113</a>  </span>Function(AsmFunc),
+<a href=#114 id=114 data-nosnippet>114</a>  <span class="doccomment">/// Array.
+<a href=#115 id=115 data-nosnippet>115</a>  </span>LArray(Vec&lt;Json&gt;),
+<a href=#116 id=116 data-nosnippet>116</a>  <span class="doccomment">/// Bool.
+<a href=#117 id=117 data-nosnippet>117</a>  </span>LBool(bool),
+<a href=#118 id=118 data-nosnippet>118</a>  <span class="doccomment">/// Float.
+<a href=#119 id=119 data-nosnippet>119</a>  </span>LFloat(f64),
+<a href=#120 id=120 data-nosnippet>120</a>  <span class="doccomment">/// Integer.
+<a href=#121 id=121 data-nosnippet>121</a>  </span>LInt(i64),
+<a href=#122 id=122 data-nosnippet>122</a>  <span class="doccomment">/// Object.
+<a href=#123 id=123 data-nosnippet>123</a>  </span>LObject(JObject),
+<a href=#124 id=124 data-nosnippet>124</a>  <span class="doccomment">/// String.
+<a href=#125 id=125 data-nosnippet>125</a>  </span>LString(String),
+<a href=#126 id=126 data-nosnippet>126</a>  <span class="doccomment">/// Null.
+<a href=#127 id=127 data-nosnippet>127</a>  </span><span class="attr">#[default]
+<a href=#128 id=128 data-nosnippet>128</a>  </span>Null,
+<a href=#129 id=129 data-nosnippet>129</a>  <span class="doccomment">/// Array variable.
+<a href=#130 id=130 data-nosnippet>130</a>  </span><span class="attr">#[expect(dead_code, reason = <span class="string">"todo"</span>)]
+<a href=#131 id=131 data-nosnippet>131</a>  </span>VArray(String),
+<a href=#132 id=132 data-nosnippet>132</a>  <span class="doccomment">/// Bool variable.
+<a href=#133 id=133 data-nosnippet>133</a>  </span><span class="attr">#[expect(dead_code, reason = <span class="string">"todo"</span>)]
+<a href=#134 id=134 data-nosnippet>134</a>  </span>VBool(String, usize),
+<a href=#135 id=135 data-nosnippet>135</a>  <span class="doccomment">/// Float variable.
+<a href=#136 id=136 data-nosnippet>136</a>  </span><span class="attr">#[expect(dead_code, reason = <span class="string">"todo"</span>)]
+<a href=#137 id=137 data-nosnippet>137</a>  </span>VFloat(String),
+<a href=#138 id=138 data-nosnippet>138</a>  <span class="doccomment">/// Integer variable.
+<a href=#139 id=139 data-nosnippet>139</a>  </span>VInt(String),
+<a href=#140 id=140 data-nosnippet>140</a>  <span class="doccomment">/// Object variable.
+<a href=#141 id=141 data-nosnippet>141</a>  </span><span class="attr">#[expect(dead_code, reason = <span class="string">"todo"</span>)]
+<a href=#142 id=142 data-nosnippet>142</a>  </span>VObject(String),
+<a href=#143 id=143 data-nosnippet>143</a>  <span class="doccomment">/// String variable.
+<a href=#144 id=144 data-nosnippet>144</a>  </span>VString(String),
+<a href=#145 id=145 data-nosnippet>145</a>}
+<a href=#146 id=146 data-nosnippet>146</a><span class="doccomment">/// Json object.
+<a href=#147 id=147 data-nosnippet>147</a></span><span class="attr">#[derive(Debug, Clone, Default)]
+<a href=#148 id=148 data-nosnippet>148</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>Json {
+<a href=#149 id=149 data-nosnippet>149</a>  <span class="doccomment">/// Line number of objects in the source code.
+<a href=#150 id=150 data-nosnippet>150</a>  </span>info: ErrorInfo,
+<a href=#151 id=151 data-nosnippet>151</a>  <span class="doccomment">/// Type and value information.
+<a href=#152 id=152 data-nosnippet>152</a>  </span>value: JValue,
+<a href=#153 id=153 data-nosnippet>153</a>}
+<a href=#154 id=154 data-nosnippet>154</a><span class="doccomment">/// Parser and compiler.
+<a href=#155 id=155 data-nosnippet>155</a></span><span class="attr">#[derive(Debug, Clone, Default)]
+<a href=#156 id=156 data-nosnippet>156</a></span><span class="kw">pub struct </span>Jsonpiler {
+<a href=#157 id=157 data-nosnippet>157</a>  <span class="doccomment">/// Built-in function table.
+<a href=#158 id=158 data-nosnippet>158</a>  </span>builtin: HashMap&lt;String, BuiltinFunc&gt;,
+<a href=#159 id=159 data-nosnippet>159</a>  <span class="doccomment">/// Flag to avoid including the same file twice.
+<a href=#160 id=160 data-nosnippet>160</a>  </span>include_flag: HashSet&lt;String&gt;,
+<a href=#161 id=161 data-nosnippet>161</a>  <span class="doccomment">/// Information to be used during parsing.
+<a href=#162 id=162 data-nosnippet>162</a>  </span>info: ErrorInfo,
+<a href=#163 id=163 data-nosnippet>163</a>  <span class="doccomment">/// Section of the assembly.
+<a href=#164 id=164 data-nosnippet>164</a>  </span>sect: Section,
+<a href=#165 id=165 data-nosnippet>165</a>  <span class="doccomment">/// Source code.
+<a href=#166 id=166 data-nosnippet>166</a>  </span>source: String,
+<a href=#167 id=167 data-nosnippet>167</a>  <span class="doccomment">/// Seed to generate names.
+<a href=#168 id=168 data-nosnippet>168</a>  </span>symbol_seeds: HashMap&lt;String, usize&gt;,
+<a href=#169 id=169 data-nosnippet>169</a>  <span class="doccomment">/// Variable table.
+<a href=#170 id=170 data-nosnippet>170</a>  </span>vars: Vec&lt;HashMap&lt;String, JValue&gt;&gt;,
+<a href=#171 id=171 data-nosnippet>171</a>}
+<a href=#172 id=172 data-nosnippet>172</a><span class="kw">impl </span>Jsonpiler {
+<a href=#173 id=173 data-nosnippet>173</a>  <span class="doccomment">/// Format error.
+<a href=#174 id=174 data-nosnippet>174</a>  </span><span class="attr">#[must_use]
+<a href=#175 id=175 data-nosnippet>175</a>  </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>fmt_err(<span class="kw-2">&amp;</span><span class="self">self</span>, err: <span class="kw-2">&amp;</span>str, info: <span class="kw-2">&amp;</span>ErrorInfo) -&gt; String {
+<a href=#176 id=176 data-nosnippet>176</a>    <span class="kw">let </span>gen_err = |msg: <span class="kw-2">&amp;</span>str| -&gt; String {
+<a href=#177 id=177 data-nosnippet>177</a>      <span class="macro">format!</span>(<span class="string">"{err}\nError occurred on line: {}\nError position:\n{msg}"</span>, info.line)
+<a href=#178 id=178 data-nosnippet>178</a>    };
+<a href=#179 id=179 data-nosnippet>179</a>    <span class="kw">if </span><span class="self">self</span>.source.is_empty() {
+<a href=#180 id=180 data-nosnippet>180</a>      <span class="kw">return </span>gen_err(<span class="string">"\n^"</span>);
+<a href=#181 id=181 data-nosnippet>181</a>    }
+<a href=#182 id=182 data-nosnippet>182</a>    <span class="kw">let </span>len = <span class="self">self</span>.source.len();
+<a href=#183 id=183 data-nosnippet>183</a>    <span class="kw">let </span>idx = info.pos.min(len.saturating_sub(<span class="number">1</span>));
+<a href=#184 id=184 data-nosnippet>184</a>    <span class="kw">let </span>start = <span class="kw">if </span>idx == <span class="number">0 </span>{
+<a href=#185 id=185 data-nosnippet>185</a>      <span class="number">0
+<a href=#186 id=186 data-nosnippet>186</a>    </span>} <span class="kw">else </span>{
+<a href=#187 id=187 data-nosnippet>187</a>      <span class="kw">let </span><span class="prelude-val">Some</span>(left) = <span class="self">self</span>.source.get(..idx) <span class="kw">else </span>{
+<a href=#188 id=188 data-nosnippet>188</a>        <span class="kw">return </span>gen_err(<span class="string">"Error: Failed to get substring"</span>);
+<a href=#189 id=189 data-nosnippet>189</a>      };
+<a href=#190 id=190 data-nosnippet>190</a>      <span class="kw">match </span>left.rfind(<span class="string">'\n'</span>) {
+<a href=#191 id=191 data-nosnippet>191</a>        <span class="prelude-val">None </span>=&gt; <span class="number">0</span>,
+<a href=#192 id=192 data-nosnippet>192</a>        <span class="prelude-val">Some</span>(start_pos) =&gt; {
+<a href=#193 id=193 data-nosnippet>193</a>          <span class="kw">let </span><span class="prelude-val">Some</span>(res) = start_pos.checked_add(<span class="number">1</span>) <span class="kw">else </span>{
+<a href=#194 id=194 data-nosnippet>194</a>            <span class="kw">return </span>gen_err(<span class="string">"Error: Overflow"</span>);
+<a href=#195 id=195 data-nosnippet>195</a>          };
+<a href=#196 id=196 data-nosnippet>196</a>          res
+<a href=#197 id=197 data-nosnippet>197</a>        }
+<a href=#198 id=198 data-nosnippet>198</a>      }
+<a href=#199 id=199 data-nosnippet>199</a>    };
+<a href=#200 id=200 data-nosnippet>200</a>    <span class="kw">let </span><span class="prelude-val">Some</span>(right) = <span class="self">self</span>.source.get(idx..) <span class="kw">else </span>{
+<a href=#201 id=201 data-nosnippet>201</a>      <span class="kw">return </span>gen_err(<span class="string">"Error: Failed to get substring"</span>);
+<a href=#202 id=202 data-nosnippet>202</a>    };
+<a href=#203 id=203 data-nosnippet>203</a>    <span class="kw">let </span>end = <span class="kw">match </span>right.find(<span class="string">'\n'</span>) {
+<a href=#204 id=204 data-nosnippet>204</a>      <span class="prelude-val">None </span>=&gt; len,
+<a href=#205 id=205 data-nosnippet>205</a>      <span class="prelude-val">Some</span>(end_pos) =&gt; {
+<a href=#206 id=206 data-nosnippet>206</a>        <span class="kw">let </span><span class="prelude-val">Some</span>(res) = idx.checked_add(end_pos) <span class="kw">else </span>{
+<a href=#207 id=207 data-nosnippet>207</a>          <span class="kw">return </span>gen_err(<span class="string">"Error: Overflow"</span>);
+<a href=#208 id=208 data-nosnippet>208</a>        };
+<a href=#209 id=209 data-nosnippet>209</a>        res
+<a href=#210 id=210 data-nosnippet>210</a>      }
+<a href=#211 id=211 data-nosnippet>211</a>    };
+<a href=#212 id=212 data-nosnippet>212</a>    <span class="kw">let </span>ws = <span class="string">" "</span>.repeat(idx.saturating_sub(start));
+<a href=#213 id=213 data-nosnippet>213</a>    <span class="kw">let </span><span class="prelude-val">Some</span>(result) = <span class="self">self</span>.source.get(start..end) <span class="kw">else </span>{
+<a href=#214 id=214 data-nosnippet>214</a>      <span class="kw">return </span>gen_err(<span class="string">"Error: Failed to get substring"</span>);
+<a href=#215 id=215 data-nosnippet>215</a>    };
+<a href=#216 id=216 data-nosnippet>216</a>    gen_err(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"{result}\n{ws}^"</span>))
+<a href=#217 id=217 data-nosnippet>217</a>  }
+<a href=#218 id=218 data-nosnippet>218</a>}
+<a href=#219 id=219 data-nosnippet>219</a><span class="doccomment">/// Section of the assembly.
+<a href=#220 id=220 data-nosnippet>220</a></span><span class="attr">#[derive(Debug, Clone, Default)]
+<a href=#221 id=221 data-nosnippet>221</a></span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>Section {
+<a href=#222 id=222 data-nosnippet>222</a>  <span class="doccomment">/// Buffer to store the contents of the bss section of the assembly.
+<a href=#223 id=223 data-nosnippet>223</a>  </span>bss: Vec&lt;String&gt;,
+<a href=#224 id=224 data-nosnippet>224</a>  <span class="doccomment">/// Buffer to store the contents of the data section of the assembly.
+<a href=#225 id=225 data-nosnippet>225</a>  </span>data: Vec&lt;String&gt;,
+<a href=#226 id=226 data-nosnippet>226</a>  <span class="doccomment">/// Buffer to store the contents of the text section of the assembly.
+<a href=#227 id=227 data-nosnippet>227</a>  </span>text: Vec&lt;String&gt;,
+<a href=#228 id=228 data-nosnippet>228</a>}
+<a href=#229 id=229 data-nosnippet>229</a><span class="doccomment">/// Compiles and executes a JSON-based program using the Jsonpiler.
+<a href=#230 id=230 data-nosnippet>230</a>/// This function performs the following steps:
+<a href=#231 id=231 data-nosnippet>231</a>/// 1. Parses the first CLI argument as the input JSON file path.
+<a href=#232 id=232 data-nosnippet>232</a>/// 2. Reads the file content into a string.
+<a href=#233 id=233 data-nosnippet>233</a>/// 3. Parses the string into a `Json` structure.
+<a href=#234 id=234 data-nosnippet>234</a>/// 4. Compiles the structure into assembly code.
+<a href=#235 id=235 data-nosnippet>235</a>/// 5. Assembles it into an `.obj` file.
+<a href=#236 id=236 data-nosnippet>236</a>/// 6. Links it into an `.exe`.
+<a href=#237 id=237 data-nosnippet>237</a>/// 7. Executes the resulting binary.
+<a href=#238 id=238 data-nosnippet>238</a>/// 8. Returns its exit code.
+<a href=#239 id=239 data-nosnippet>239</a>/// # Panics
+<a href=#240 id=240 data-nosnippet>240</a>/// This function will panic if:
+<a href=#241 id=241 data-nosnippet>241</a>/// - The platform is not Windows.
+<a href=#242 id=242 data-nosnippet>242</a>/// - CLI arguments are invalid.
+<a href=#243 id=243 data-nosnippet>243</a>/// - File reading, parsing, compilation, assembling, linking, or execution fails.
+<a href=#244 id=244 data-nosnippet>244</a>/// - The working directory or executable filename is invalid.
+<a href=#245 id=245 data-nosnippet>245</a>/// # Requirements
+<a href=#246 id=246 data-nosnippet>246</a>/// - `as` and `ld` must be available in the system PATH.
+<a href=#247 id=247 data-nosnippet>247</a>/// - On failure, exits with code 1 using `error_exit`.
+<a href=#248 id=248 data-nosnippet>248</a>/// # Example
+<a href=#249 id=249 data-nosnippet>249</a>/// ```sh
+<a href=#250 id=250 data-nosnippet>250</a>/// ./jsonpiler test.json
+<a href=#251 id=251 data-nosnippet>251</a>/// ```
+<a href=#252 id=252 data-nosnippet>252</a>/// # Platform
+<a href=#253 id=253 data-nosnippet>253</a>/// Windows only.
+<a href=#254 id=254 data-nosnippet>254</a></span><span class="attr">#[inline]
+<a href=#255 id=255 data-nosnippet>255</a>#[must_use]
+<a href=#256 id=256 data-nosnippet>256</a></span><span class="kw">pub fn </span>run() -&gt; ExitCode {
+<a href=#257 id=257 data-nosnippet>257</a>  <span class="attr">#[cfg(all(not(doc), not(target_os = <span class="string">"windows"</span>)))]
+<a href=#258 id=258 data-nosnippet>258</a>  </span><span class="macro">compile_error!</span>(<span class="string">"This program is supported on Windows only."</span>);
+<a href=#259 id=259 data-nosnippet>259</a>  <span class="kw">let </span>args: Vec&lt;String&gt; = env::args().collect();
+<a href=#260 id=260 data-nosnippet>260</a>  <span class="kw">let </span><span class="prelude-val">Some</span>(program_name) = args.first() <span class="kw">else </span>{ <span class="macro">exit!</span>(<span class="string">"Failed to get the program name."</span>) };
+<a href=#261 id=261 data-nosnippet>261</a>  <span class="kw">let </span><span class="prelude-val">Some</span>(input_file) = args.get(<span class="number">1</span>) <span class="kw">else </span>{
+<a href=#262 id=262 data-nosnippet>262</a>    <span class="macro">exit!</span>(<span class="string">"Usage: {program_name} &lt;input_json_file&gt; [args for .exe]"</span>)
+<a href=#263 id=263 data-nosnippet>263</a>  };
+<a href=#264 id=264 data-nosnippet>264</a>  <span class="kw">let </span>source = <span class="kw">match </span>fs::read_to_string(input_file) {
+<a href=#265 id=265 data-nosnippet>265</a>    <span class="prelude-val">Ok</span>(content) =&gt; content,
+<a href=#266 id=266 data-nosnippet>266</a>    <span class="prelude-val">Err</span>(err) =&gt; <span class="macro">exit!</span>(<span class="string">"Failed to read `{input_file}`: {err}"</span>),
+<a href=#267 id=267 data-nosnippet>267</a>  };
+<a href=#268 id=268 data-nosnippet>268</a>  <span class="kw">let </span><span class="kw-2">mut </span>jsonpiler = Jsonpiler::default();
+<a href=#269 id=269 data-nosnippet>269</a>  <span class="kw">let </span>file = Path::new(input_file);
+<a href=#270 id=270 data-nosnippet>270</a>  <span class="kw">let </span>asm = file.with_extension(<span class="string">"s"</span>).to_string_lossy().to_string();
+<a href=#271 id=271 data-nosnippet>271</a>  <span class="kw">let </span>obj = file.with_extension(<span class="string">"obj"</span>).to_string_lossy().to_string();
+<a href=#272 id=272 data-nosnippet>272</a>  <span class="kw">let </span>exe = file.with_extension(<span class="string">"exe"</span>).to_string_lossy().to_string();
+<a href=#273 id=273 data-nosnippet>273</a>  <span class="kw">if let </span><span class="prelude-val">Err</span>(err) = jsonpiler.build(source, input_file, <span class="kw-2">&amp;</span>asm) {
+<a href=#274 id=274 data-nosnippet>274</a>    <span class="macro">exit!</span>(<span class="string">"Compilation error: {err}"</span>);
+<a href=#275 id=275 data-nosnippet>275</a>  }
+<a href=#276 id=276 data-nosnippet>276</a>  <span class="kw">match </span>Command::new(<span class="string">"as"</span>).args([<span class="kw-2">&amp;</span>asm, <span class="string">"-o"</span>, <span class="kw-2">&amp;</span>obj]).status() {
+<a href=#277 id=277 data-nosnippet>277</a>    <span class="prelude-val">Ok</span>(status) <span class="kw">if </span>status.success() =&gt; status,
+<a href=#278 id=278 data-nosnippet>278</a>    <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; <span class="macro">exit!</span>(<span class="string">"Assembler returned a non-zero exit status."</span>),
+<a href=#279 id=279 data-nosnippet>279</a>    <span class="prelude-val">Err</span>(err) =&gt; <span class="macro">exit!</span>(<span class="string">"Failed to invoke assembler: {err}"</span>),
+<a href=#280 id=280 data-nosnippet>280</a>  };
+<a href=#281 id=281 data-nosnippet>281</a>  <span class="attr">#[cfg(not(debug_assertions))]
+<a href=#282 id=282 data-nosnippet>282</a>  </span><span class="kw">if let </span><span class="prelude-val">Err</span>(err) = fs::remove_file(<span class="kw-2">&amp;</span>asm) {
+<a href=#283 id=283 data-nosnippet>283</a>    <span class="macro">exit!</span>(<span class="string">"Failed to delete `{asm}`: {err}"</span>)
+<a href=#284 id=284 data-nosnippet>284</a>  }
+<a href=#285 id=285 data-nosnippet>285</a>  <span class="kw">match </span>Command::new(<span class="string">"ld"</span>)
+<a href=#286 id=286 data-nosnippet>286</a>    .args([
+<a href=#287 id=287 data-nosnippet>287</a>      <span class="kw-2">&amp;</span>obj,
+<a href=#288 id=288 data-nosnippet>288</a>      <span class="string">"-o"</span>,
+<a href=#289 id=289 data-nosnippet>289</a>      <span class="kw-2">&amp;</span>exe,
+<a href=#290 id=290 data-nosnippet>290</a>      <span class="string">"-LC:/Windows/System32"</span>,
+<a href=#291 id=291 data-nosnippet>291</a>      <span class="string">"-luser32"</span>,
+<a href=#292 id=292 data-nosnippet>292</a>      <span class="string">"-lkernel32"</span>,
+<a href=#293 id=293 data-nosnippet>293</a>      <span class="string">"-lucrtbase"</span>,
+<a href=#294 id=294 data-nosnippet>294</a>      <span class="string">"--gc-sections"</span>,
+<a href=#295 id=295 data-nosnippet>295</a>      <span class="string">"-e_start"</span>,
+<a href=#296 id=296 data-nosnippet>296</a>    ])
+<a href=#297 id=297 data-nosnippet>297</a>    .status()
+<a href=#298 id=298 data-nosnippet>298</a>  {
+<a href=#299 id=299 data-nosnippet>299</a>    <span class="prelude-val">Ok</span>(status) <span class="kw">if </span>status.success() =&gt; status,
+<a href=#300 id=300 data-nosnippet>300</a>    <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; <span class="macro">exit!</span>(<span class="string">"Linker returned a non-zero exit status."</span>),
+<a href=#301 id=301 data-nosnippet>301</a>    <span class="prelude-val">Err</span>(err) =&gt; <span class="macro">exit!</span>(<span class="string">"Failed to invoke linker: {err}"</span>),
+<a href=#302 id=302 data-nosnippet>302</a>  };
+<a href=#303 id=303 data-nosnippet>303</a>  <span class="kw">if let </span><span class="prelude-val">Err</span>(err) = fs::remove_file(<span class="kw-2">&amp;</span>obj) {
+<a href=#304 id=304 data-nosnippet>304</a>    <span class="macro">exit!</span>(<span class="string">"Failed to delete `{obj}`: {err}"</span>)
+<a href=#305 id=305 data-nosnippet>305</a>  }
+<a href=#306 id=306 data-nosnippet>306</a>  <span class="kw">let </span>cwd = <span class="kw">match </span>env::current_dir() {
+<a href=#307 id=307 data-nosnippet>307</a>    <span class="prelude-val">Ok</span>(dir) =&gt; dir,
+<a href=#308 id=308 data-nosnippet>308</a>    <span class="prelude-val">Err</span>(err) =&gt; <span class="macro">exit!</span>(<span class="string">"Failed to get current directory: {err}"</span>),
+<a href=#309 id=309 data-nosnippet>309</a>  }
+<a href=#310 id=310 data-nosnippet>310</a>  .join(<span class="kw-2">&amp;</span>exe);
+<a href=#311 id=311 data-nosnippet>311</a>  <span class="kw">let </span>exe_status = <span class="kw">match </span>Command::new(cwd).args(args.get(<span class="number">2</span>..).unwrap_or(<span class="kw-2">&amp;</span>[])).status() {
+<a href=#312 id=312 data-nosnippet>312</a>    <span class="prelude-val">Ok</span>(status) =&gt; status,
+<a href=#313 id=313 data-nosnippet>313</a>    <span class="prelude-val">Err</span>(err) =&gt; <span class="macro">exit!</span>(<span class="string">"Failed to execute compiled program: {err}"</span>),
+<a href=#314 id=314 data-nosnippet>314</a>  };
+<a href=#315 id=315 data-nosnippet>315</a>  <span class="kw">let </span><span class="prelude-val">Some</span>(exit_code) = exe_status.code() <span class="kw">else </span>{
+<a href=#316 id=316 data-nosnippet>316</a>    <span class="macro">exit!</span>(<span class="string">"Could not retrieve the child process's exit code."</span>)
+<a href=#317 id=317 data-nosnippet>317</a>  };
+<a href=#318 id=318 data-nosnippet>318</a>  <span class="kw">if let </span><span class="prelude-val">Ok</span>(code) = u8::try_from(exit_code.rem_euclid(<span class="number">256</span>)) {
+<a href=#319 id=319 data-nosnippet>319</a>    ExitCode::from(code)
+<a href=#320 id=320 data-nosnippet>320</a>  } <span class="kw">else </span>{
+<a href=#321 id=321 data-nosnippet>321</a>    <span class="macro">exit!</span>(<span class="string">"Internal error: Unexpected failure in exit code conversion."</span>)
+<a href=#322 id=322 data-nosnippet>322</a>  }
+<a href=#323 id=323 data-nosnippet>323</a>}</code></pre></div></section></main></body></html>

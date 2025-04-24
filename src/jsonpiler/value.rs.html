@@ -9,20 +9,20 @@
 <a href=#9 id=9 data-nosnippet>9</a>  </span><span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter) -&gt; fmt::Result {
 <a href=#10 id=10 data-nosnippet>10</a>    <span class="kw">match </span><span class="self">self </span>{
 <a href=#11 id=11 data-nosnippet>11</a>      JValue::Null =&gt; f.write_str(<span class="string">"Null"</span>),
-<a href=#12 id=12 data-nosnippet>12</a>      JValue::LBool(bo) =&gt; <span class="macro">write!</span>(f, <span class="string">"{bo}"</span>),
-<a href=#13 id=13 data-nosnippet>13</a>      JValue::VBool(bv, bit) =&gt; <span class="macro">write!</span>(f, <span class="string">"({bv}-{bit}: VBool)"</span>),
-<a href=#14 id=14 data-nosnippet>14</a>      JValue::LInt(int) =&gt; <span class="macro">write!</span>(f, <span class="string">"{int}"</span>),
-<a href=#15 id=15 data-nosnippet>15</a>      JValue::VInt(iv) =&gt; <span class="macro">write!</span>(f, <span class="string">"({iv}: VInt)"</span>),
-<a href=#16 id=16 data-nosnippet>16</a>      JValue::LFloat(fl) =&gt; <span class="macro">write!</span>(f, <span class="string">"{fl}"</span>),
-<a href=#17 id=17 data-nosnippet>17</a>      JValue::VFloat(fv) =&gt; <span class="macro">write!</span>(f, <span class="string">"({fv}: VFloat)"</span>),
-<a href=#18 id=18 data-nosnippet>18</a>      JValue::LString(st) =&gt; f.write_str(<span class="kw-2">&amp;</span>escape_string(st)<span class="question-mark">?</span>),
-<a href=#19 id=19 data-nosnippet>19</a>      JValue::VString(sv) =&gt; <span class="macro">write!</span>(f, <span class="string">"({sv}: VString)"</span>),
-<a href=#20 id=20 data-nosnippet>20</a>      JValue::LArray(ar) =&gt; {
-<a href=#21 id=21 data-nosnippet>21</a>        f.write_str(<span class="string">"["</span>)<span class="question-mark">?</span>;
-<a href=#22 id=22 data-nosnippet>22</a>        iter_write(ar, f)<span class="question-mark">?</span>;
-<a href=#23 id=23 data-nosnippet>23</a>        f.write_str(<span class="string">"]"</span>)
-<a href=#24 id=24 data-nosnippet>24</a>      }
-<a href=#25 id=25 data-nosnippet>25</a>      JValue::VArray(av) =&gt; <span class="macro">write!</span>(f, <span class="string">"({av}: VArray)"</span>),
+<a href=#12 id=12 data-nosnippet>12</a>      JValue::LArray(ar) =&gt; {
+<a href=#13 id=13 data-nosnippet>13</a>        f.write_str(<span class="string">"["</span>)<span class="question-mark">?</span>;
+<a href=#14 id=14 data-nosnippet>14</a>        iter_write(ar, f)<span class="question-mark">?</span>;
+<a href=#15 id=15 data-nosnippet>15</a>        f.write_str(<span class="string">"]"</span>)
+<a href=#16 id=16 data-nosnippet>16</a>      }
+<a href=#17 id=17 data-nosnippet>17</a>      JValue::VArray(va) =&gt; <span class="macro">write!</span>(f, <span class="string">"VArray(\"{va}\")"</span>),
+<a href=#18 id=18 data-nosnippet>18</a>      JValue::LBool(bo) =&gt; <span class="macro">write!</span>(f, <span class="string">"{bo}"</span>),
+<a href=#19 id=19 data-nosnippet>19</a>      JValue::VBool(vb, bit) =&gt; <span class="macro">write!</span>(f, <span class="string">"VBool(\"{vb}\"-{bit})"</span>),
+<a href=#20 id=20 data-nosnippet>20</a>      JValue::LInt(int) =&gt; <span class="macro">write!</span>(f, <span class="string">"{int}"</span>),
+<a href=#21 id=21 data-nosnippet>21</a>      JValue::VInt(vi) =&gt; <span class="macro">write!</span>(f, <span class="string">"VInt(\"{vi}\")"</span>),
+<a href=#22 id=22 data-nosnippet>22</a>      JValue::LFloat(fl) =&gt; <span class="macro">write!</span>(f, <span class="string">"{fl}"</span>),
+<a href=#23 id=23 data-nosnippet>23</a>      JValue::VFloat(vf) =&gt; <span class="macro">write!</span>(f, <span class="string">"VFloat(\"{vf}\")"</span>),
+<a href=#24 id=24 data-nosnippet>24</a>      JValue::LString(st) =&gt; f.write_str(<span class="kw-2">&amp;</span>escape_string(st)<span class="question-mark">?</span>),
+<a href=#25 id=25 data-nosnippet>25</a>      JValue::VString(vs) =&gt; <span class="macro">write!</span>(f, <span class="string">"VString(\"{vs}\")"</span>),
 <a href=#26 id=26 data-nosnippet>26</a>      JValue::Function(fu) =&gt; {
 <a href=#27 id=27 data-nosnippet>27</a>        <span class="macro">write!</span>(f, <span class="string">"{}("</span>, fu.name)<span class="question-mark">?</span>;
 <a href=#28 id=28 data-nosnippet>28</a>        iter_write(<span class="kw-2">&amp;</span>fu.params, f)<span class="question-mark">?</span>;
@@ -40,7 +40,7 @@
 <a href=#40 id=40 data-nosnippet>40</a>        }
 <a href=#41 id=41 data-nosnippet>41</a>        f.write_str(<span class="string">"}"</span>)
 <a href=#42 id=42 data-nosnippet>42</a>      }
-<a href=#43 id=43 data-nosnippet>43</a>      JValue::VObject(ov) =&gt; <span class="macro">write!</span>(f, <span class="string">"({ov}: VObject)"</span>),
+<a href=#43 id=43 data-nosnippet>43</a>      JValue::VObject(vo) =&gt; <span class="macro">write!</span>(f, <span class="string">"VObject({vo})"</span>),
 <a href=#44 id=44 data-nosnippet>44</a>    }
 <a href=#45 id=45 data-nosnippet>45</a>  }
 <a href=#46 id=46 data-nosnippet>46</a>}
