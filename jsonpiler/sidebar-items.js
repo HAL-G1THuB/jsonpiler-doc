@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["Align"],"fn":["run"],"macro":["err"],"struct":["Jsonpiler"]};
+window.SIDEBAR_ITEMS = {"fn":["run"],"macro":["err","include_once"],"struct":["Jsonpiler"]};
