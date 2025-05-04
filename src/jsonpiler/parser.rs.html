@@ -38,7 +38,7 @@
 <a href=#38 id=38 data-nosnippet>38</a>      <span class="self">self</span>.advance(<span class="number">1</span>)<span class="question-mark">?</span>;
 <a href=#39 id=39 data-nosnippet>39</a>      <span class="prelude-val">Ok</span>(())
 <a href=#40 id=40 data-nosnippet>40</a>    } <span class="kw">else </span>{
-<a href=#41 id=41 data-nosnippet>41</a>      <span class="macro">err!</span>(<span class="self">self</span>, <span class="string">"Expected byte '{expected}' not found."</span>)
+<a href=#41 id=41 data-nosnippet>41</a>      <span class="macro">err!</span>(<span class="self">self</span>, <span class="self">self</span>.pos, <span class="string">"Expected byte '{}' not found."</span>, char::from(expected))
 <a href=#42 id=42 data-nosnippet>42</a>    }
 <a href=#43 id=43 data-nosnippet>43</a>  }
 <a href=#44 id=44 data-nosnippet>44</a>  <span class="doccomment">/// Advances the position by `n` characters.

@@ -34,10 +34,10 @@
 <a href=#34 id=34 data-nosnippet>34</a><span class="doccomment">/// Macro to include assembly files only once.
 <a href=#35 id=35 data-nosnippet>35</a></span><span class="attr">#[macro_export]
 <a href=#36 id=36 data-nosnippet>36</a></span><span class="macro">macro_rules!</span> include_once {
-<a href=#37 id=37 data-nosnippet>37</a>  (<span class="macro-nonterminal">$self</span>:ident, <span class="macro-nonterminal">$name</span>:literal) =&gt; {
+<a href=#37 id=37 data-nosnippet>37</a>  (<span class="macro-nonterminal">$self</span>:ident, <span class="macro-nonterminal">$dest</span>:expr, <span class="macro-nonterminal">$name</span>:literal) =&gt; {
 <a href=#38 id=38 data-nosnippet>38</a>    <span class="kw">if </span>!<span class="macro-nonterminal">$self</span>.include_flag.contains(<span class="macro-nonterminal">$name</span>) {
 <a href=#39 id=39 data-nosnippet>39</a>      <span class="macro-nonterminal">$self</span>.include_flag.insert(<span class="macro-nonterminal">$name</span>.into());
-<a href=#40 id=40 data-nosnippet>40</a>      <span class="macro-nonterminal">$self</span>.text.push(<span class="macro">include_str!</span>(<span class="macro">concat!</span>(<span class="string">"asm/"</span>, <span class="macro-nonterminal">$name</span>, <span class="string">".s"</span>)).into());
+<a href=#40 id=40 data-nosnippet>40</a>      <span class="macro-nonterminal">$dest</span>.push(<span class="macro">include_str!</span>(<span class="macro">concat!</span>(<span class="string">"asm/"</span>, <span class="macro-nonterminal">$name</span>, <span class="string">".s"</span>)).into());
 <a href=#41 id=41 data-nosnippet>41</a>    }
 <a href=#42 id=42 data-nosnippet>42</a>  };
 <a href=#43 id=43 data-nosnippet>43</a>}
@@ -98,7 +98,7 @@
 <a href=#98 id=98 data-nosnippet>98</a>  </span>stack_size: usize,
 <a href=#99 id=99 data-nosnippet>99</a>}
 <a href=#100 id=100 data-nosnippet>100</a><span class="doccomment">/// Type of global variable.
-<a href=#101 id=101 data-nosnippet>101</a></span><span class="kw">enum </span>GVar {
+<a href=#101 id=101 data-nosnippet>101</a></span><span class="kw">enum </span>GlobalKind {
 <a href=#102 id=102 data-nosnippet>102</a>  <span class="doccomment">/// BSS variable.
 <a href=#103 id=103 data-nosnippet>103</a>  </span>Bss,
 <a href=#104 id=104 data-nosnippet>104</a>  <span class="doccomment">/// Global function.
@@ -178,14 +178,14 @@
 <a href=#178 id=178 data-nosnippet>178</a>  <span class="doccomment">/// Variable seed.
 <a href=#179 id=179 data-nosnippet>179</a>  </span>seed: usize,
 <a href=#180 id=180 data-nosnippet>180</a>  <span class="doccomment">/// Variable type.
-<a href=#181 id=181 data-nosnippet>181</a>  </span>var: Var,
+<a href=#181 id=181 data-nosnippet>181</a>  </span>var: VarKind,
 <a href=#182 id=182 data-nosnippet>182</a>}
 <a href=#183 id=183 data-nosnippet>183</a><span class="kw">impl </span>Display <span class="kw">for </span>Name {
 <a href=#184 id=184 data-nosnippet>184</a>  <span class="attr">#[expect(clippy::min_ident_chars, reason = <span class="string">"default name is 'f'"</span>)]
 <a href=#185 id=185 data-nosnippet>185</a>  </span><span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">'_</span>&gt;) -&gt; fmt::Result {
 <a href=#186 id=186 data-nosnippet>186</a>    <span class="kw">match </span><span class="self">self</span>.var {
-<a href=#187 id=187 data-nosnippet>187</a>      Var::Global =&gt; <span class="macro">write!</span>(f, <span class="string">" ptr .L{:x}[rip]"</span>, <span class="self">self</span>.seed),
-<a href=#188 id=188 data-nosnippet>188</a>      Var::Local | Var::Tmp =&gt; <span class="macro">write!</span>(f, <span class="string">" ptr -0x{:x}[rbp]"</span>, <span class="self">self</span>.seed),
+<a href=#187 id=187 data-nosnippet>187</a>      VarKind::Global =&gt; <span class="macro">write!</span>(f, <span class="string">" ptr .L{:x}[rip]"</span>, <span class="self">self</span>.seed),
+<a href=#188 id=188 data-nosnippet>188</a>      VarKind::Local | VarKind::Tmp =&gt; <span class="macro">write!</span>(f, <span class="string">" ptr -0x{:x}[rbp]"</span>, <span class="self">self</span>.seed),
 <a href=#189 id=189 data-nosnippet>189</a>    }
 <a href=#190 id=190 data-nosnippet>190</a>  }
 <a href=#191 id=191 data-nosnippet>191</a>}
@@ -201,7 +201,7 @@
 <a href=#201 id=201 data-nosnippet>201</a>}
 <a href=#202 id=202 data-nosnippet>202</a><span class="doccomment">/// Variable.
 <a href=#203 id=203 data-nosnippet>203</a></span><span class="attr">#[derive(Debug, Clone, Copy, PartialEq)]
-<a href=#204 id=204 data-nosnippet>204</a></span><span class="kw">enum </span>Var {
+<a href=#204 id=204 data-nosnippet>204</a></span><span class="kw">enum </span>VarKind {
 <a href=#205 id=205 data-nosnippet>205</a>  <span class="doccomment">/// Global variable.
 <a href=#206 id=206 data-nosnippet>206</a>  </span>Global,
 <a href=#207 id=207 data-nosnippet>207</a>  <span class="doccomment">/// Local variable.
